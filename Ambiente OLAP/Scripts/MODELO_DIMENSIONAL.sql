@@ -35,8 +35,8 @@ CREATE TABLE DIM_LOCALIDADE (
   codigo INT NOT NULL,
   estado VARCHAR(45) NOT NULL,
   cidade VARCHAR(45) NOT NULL,
-  rua VARCHAR(45) NOT NULL,
-  bairro VARCHAR(45) NOT NULL
+  rua VARCHAR(100) NOT NULL,
+  bairro VARCHAR(100) NOT NULL
 )
 
 -- -----------------------------------------------------
@@ -135,7 +135,7 @@ CREATE TABLE FATO_ACOMPANHAMENTO (
   id_cliente INT NOT NULL,
   id_acompanhante INT NOT NULL,
   id_localidade INT NOT NULL,
-  id_oportunidade INT NOT NULL,
+  id_oportunidade INT NULL,
   id_servico INT NOT NULL,
   idTransacao INT NOT NULL,
   id_faixa_etaria_cliente INT NOT NULL,
@@ -206,6 +206,7 @@ BEGIN
     END
 END
 
-EXEC SP_POVOA_DIM_TEMPO '20191010', '20301010';
+EXEC SP_POVOA_DIM_TEMPO '20170101', '20301010';
 
 select * from DIM_TEMPO;
+

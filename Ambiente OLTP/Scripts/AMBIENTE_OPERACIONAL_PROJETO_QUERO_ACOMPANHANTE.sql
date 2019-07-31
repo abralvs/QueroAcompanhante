@@ -90,9 +90,11 @@ CREATE TABLE DetalhesEncontro(
    dataServico DATETIME NULL DEFAULT NULL,
    horaInicio TIME NULL DEFAULT NULL,
    horaFim TIME NULL DEFAULT NULL,
+   estado char(2) NULL DEFAULT NULL,
    cidade VARCHAR(45) NULL DEFAULT NULL,
-   rua VARCHAR(45) NULL DEFAULT NULL,
-   nLocal VARCHAR(45) NULL DEFAULT NULL,
+   bairro VARCHAR(100) NULL DEFAULT NULL,   
+   rua VARCHAR(100) NULL DEFAULT NULL,
+   nLocal INT NULL DEFAULT NULL,
    referencia VARCHAR(100) NULL DEFAULT NULL,
    valor NUMERIC(10,2) NULL DEFAULT NULL,
    PRIMARY KEY (idDetalhesEncontro),
@@ -227,8 +229,8 @@ AS
 			   ('Certo.',GETDATE(),1,4,1)
 
 		-- Detalhes Primeiro Encontro
-		INSERT INTO DetalhesEncontro (idServico,dataServico,horaInicio,horaFim,cidade,rua,nLocal,referencia,valor)
-		VALUES(1,'20190725','08:00:00','12:00:00','ITABAIANA','AV. BOANERGES PINHEIRO',144,'',200.00 )
+		INSERT INTO DetalhesEncontro (idServico,dataServico,horaInicio,horaFim,estado,cidade,bairro,rua,nLocal,referencia,valor)
+		VALUES(1,'20190725','08:00:00','12:00:00','SE','ITABAIANA','CENTRO','AV. BOANERGES PINHEIRO',144,'',200.00 )
 
 
 		/*-----------------------------------------------------------------------------------------------------------------------------------*/	
@@ -247,8 +249,8 @@ AS
 		UPDATE Oportunidade SET status = 'OCUPADA' WHERE idOportunidade = 3
 
 		-- DETALHES SEGUNDO ENCONTRO
-		INSERT INTO DetalhesEncontro (idServico,dataServico,horaInicio,horaFim,cidade,rua,nLocal,referencia,valor)
-		VALUES(3,'20190725','08:00:00','12:00:00','ITABAIANA','RUA CAPITAO JOSÉ FERREIRA',232,'',80.00 )
+		INSERT INTO DetalhesEncontro (idServico,dataServico,horaInicio,horaFim,estado,cidade,bairro,rua,nLocal,referencia,valor)
+		VALUES(3,'20190725','08:00:00','12:00:00','SE','ITABAIANA','CENTRO','RUA CAPITAO JOSÉ FERREIRA',232,'',80.00 )
 		
 		
 		/*-----------------------------------------------------------------------------------------------------------------------------------*/

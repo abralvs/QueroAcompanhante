@@ -7,6 +7,7 @@
  * 25/07/2019
  **/
  USE QueroAcompanhanteSAD
+ 
 
 /*--------------------------- CRIANDO TABELAS AUXILIARES DA AREA DE STAGING ---------------------------*/
 
@@ -25,18 +26,19 @@ CREATE TABLE TB_AUX_CLIENTE(
 CREATE TABLE TB_AUX_OPORTUNIDADE(	
 	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
-	id_tipo_acompanhamento INT NOT NULL,
-	id_cliente INT NOT NULL,
+	id_tipo_acompanhamento INT NULL,
+	id_cliente INT NULL,
 	id_servico INT NULL,
 	descricao VARCHAR(300) NULL,
 	titulo VARCHAR(50) NULL,
+	qtd_candidatos INT NULL, -- novo campo
 	status VARCHAR(45) NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FINALIZADA'))
 )
 
 CREATE TABLE TB_AUX_LOCALIDADE(
 	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
-	id_usuario INT NOT NULL, 
+	id_servico INT NULL, 
 	estado CHAR(2) NULL,
 	cidade VARCHAR(45) NULL,
 	rua VARCHAR(45) NULL,
@@ -52,8 +54,8 @@ CREATE TABLE TB_AUX_ACOMPANHANTE(
 	genero VARCHAR(45) NULL,
 	usuario VARCHAR(45) NULL,
 	data_nascimento DATE NULL,
-	idade INT NOT NULL,
-	valor_hora NUMERIC(10,2)
+	idade INT NULL,
+	valor_hora NUMERIC(10,2) NULL
 )
 
 CREATE TABLE TB_AUX_TRANSACAO(
@@ -70,6 +72,7 @@ CREATE TABLE TB_AUX_SERVICO(
 	id_acompanhante INT NULL,
 	id_cliente INT NULL,
 	id_tipo_acompanhamento INT NULL,
+	valor_total NUMERIC(10,2), -- novo campo
 	status VARCHAR(45) NULL CHECK(status IN('PENDENTE', 'ACEITA', 'RECUSADA', 'CANCELADA', 'FINALIZADA'))
 )
 
@@ -83,22 +86,21 @@ CREATE TABLE TB_AUX_TIPO_ACOMPANHAMENTO(
 
 CREATE TABLE TB_AUX_FATO_ACOMPANHAMENTO(
 	data_carga DATETIME NOT NULL,
-	id_tempo INT NOT NULL,
-	id_cliente INT NOT NULL,
-	id_acompanhamento INT NOT NULL,
-	id_localidade INT NOT NULL,
-	id_oportunidade INT NOT NULL,
-	id_servico INT NOT NULL,
-	id_transacao INT NOT NULL,
-	id_faixa_etaria_cliente INT NOT NULL,
-	id_faixa_etaria_acompanhante INT NOT NULL,
-	id_data_transacao INT NOT NULL,
-	id_tipo_acompanhamento INT NOT NULL,
+	id_tempo INT  NULL,
+	id_cliente INT NULL,
+	id_acompanhante INT NULL,
+	id_localidade INT NULL,
+	id_oportunidade INT  NULL,
+	id_servico INT NULL,
+	id_transacao INT NULL,
+	id_faixa_etaria_cliente INT NULL,
+	id_faixa_etaria_acompanhante INT  NULL,
+	id_data_transacao INT NULL,
+	id_tipo_acompanhamento INT NULL,
 	qtd INT NULL,
 	valor NUMERIC(10,2) NULL,
 	qtd_candidatos INT NULL
 )
-
 
 
 /*--------------------------- CRIANDO TABELAS DE VIOLAÇÃO DA AREA DE STAGING ---------------------------*/
@@ -113,7 +115,7 @@ CREATE TABLE TB_VIO_CLIENTE(
 	genero VARCHAR(45) NULL,
 	usuario VARCHAR(45) NULL,
 	data_nascimento DATE NULL,
-	idade INT,
+	idade INT NULL,
 	data_violacao DATETIME NOT NULL,
 	violacao VARCHAR(100) NOT NULL
 	PRIMARY KEY(id)
@@ -123,11 +125,12 @@ CREATE TABLE TB_VIO_OPORTUNIDADE(
 	id INT IDENTITY(1,1) NOT NULL,
 	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
-	id_tipo_acompanhamento INT NOT NULL,
-	id_cliente INT NOT NULL,
+	id_tipo_acompanhamento INT NULL,
+	id_cliente INT NULL,
 	id_servico INT NULL,
 	descricao VARCHAR(300) NULL,
 	titulo VARCHAR(50) NULL,
+	qtd_candidatos INT NULL, -- novo campo
 	status VARCHAR(50) NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FINALIZADA')),
 	data_violacao DATETIME NOT NULL,
 	violacao VARCHAR(100) NOT NULL
@@ -138,11 +141,11 @@ CREATE TABLE TB_VIO_LOCALIDADE(
 	id INT IDENTITY(1,1) NOT NULL,
 	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
-	id_usuario INT NOT NULL, 
+	id_usuario INT NULL, 
 	estado CHAR(2) NULL,
 	cidade VARCHAR(45) NULL,
-	rua VARCHAR(45) NULL,
-	bairro VARCHAR(45) NULL,
+	rua VARCHAR(100) NULL,
+	bairro VARCHAR(100) NULL,
 	data_violacao DATETIME NOT NULL,
 	violacao VARCHAR(100) NOT NULL
 	PRIMARY KEY(id)
@@ -158,8 +161,8 @@ CREATE TABLE TB_VIO_ACOMPANHANTE(
 	genero VARCHAR(45) NULL,
 	usuario VARCHAR(45) NULL,
 	data_nascimento DATE NULL,
-	idade INT NOT NULL,
-	valor_hora NUMERIC(10,2),
+	idade INT NULL,
+	valor_hora NUMERIC(10,2) NULL,
 	data_violacao DATETIME NOT NULL,
 	violacao VARCHAR(100) NOT NULL
 	PRIMARY KEY(id)
@@ -184,6 +187,7 @@ CREATE TABLE TB_VIO_SERVICO(
 	id_acompanhante INT NULL,
 	id_cliente INT NULL,
 	id_tipo_acompanhamento INT NULL,
+	valor_total NUMERIC(10,2), -- novo campo
 	status VARCHAR(45) NULL CHECK(status IN('PENDENTE', 'ACEITA', 'RECUSADA', 'CANCELADA', 'FINALIZADA')),
 	data_violacao DATETIME NOT NULL,
 	violacao VARCHAR(100) NOT NULL
@@ -193,7 +197,7 @@ CREATE TABLE TB_VIO_SERVICO(
 CREATE TABLE TB_VIO_TIPO_ACOMPANHAMENTO(
 	id INT IDENTITY(1,1) NOT NULL,
 	data_carga DATETIME NOT NULL,
-	codigo INT NOT NULL,
+	codigo INT  NOT NULL,
 	descricao VARCHAR(300) NULL,
 	tipo_acompanhamento VARCHAR(45) NULL,
 	data_violacao DATETIME NOT NULL,
@@ -205,17 +209,17 @@ CREATE TABLE TB_VIO_TIPO_ACOMPANHAMENTO(
 CREATE TABLE TB_VIO_FATO_ACOMPANHAMENTO(
 	id INT IDENTITY(1,1) NOT NULL,
 	data_carga DATETIME NOT NULL,
-	id_tempo INT NOT NULL,
-	id_cliente INT NOT NULL,
-	id_acompanhamento INT NOT NULL,
-	id_localidade INT NOT NULL,
-	id_oportunidade INT NOT NULL,
-	id_servico INT NOT NULL,
-	id_transacao INT NOT NULL,
-	id_faixa_etaria_cliente INT NOT NULL,
-	id_faixa_etaria_acompanhante INT NOT NULL,
-	id_data_transacao INT NOT NULL,
-	id_tipo_acompanhamento INT NOT NULL,
+	id_tempo INT NULL,
+	id_cliente INT NULL,
+	id_acompanhamento INT NULL,
+	id_localidade INT NULL,
+	id_oportunidade INT NULL,
+	id_servico INT NULL,
+	id_transacao INT NULL,
+	id_faixa_etaria_cliente INT NULL,
+	id_faixa_etaria_acompanhante INT NULL,
+	id_data_transacao INT NULL,
+	id_tipo_acompanhamento INT NULL,
 	qtd INT NULL,
 	valor NUMERIC(10,2) NULL,
 	qtd_candidatos INT NULL,
