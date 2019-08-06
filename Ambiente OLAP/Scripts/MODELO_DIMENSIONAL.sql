@@ -9,6 +9,7 @@
 DROP DATABASE QueroAcompanhanteSAD;
 CREATE DATABASE QueroAcompanhanteSAD;
 USE QueroAcompanhanteSAD;
+
 -- -----------------------------------------------------
 -- Table DIM_TEMPO
 -- -----------------------------------------------------

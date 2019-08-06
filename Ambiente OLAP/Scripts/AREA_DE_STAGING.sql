@@ -7,7 +7,6 @@
  * 25/07/2019
  **/
  USE QueroAcompanhanteSAD
-
 /*--------------------------- CRIANDO TABELAS AUXILIARES DA AREA DE STAGING ---------------------------*/
 
 CREATE TABLE TB_AUX_CLIENTE(
@@ -232,9 +231,9 @@ CREATE TABLE TB_VIO_FATO_ACOMPANHAMENTO(
 /*--------------------------- PROCEDIMENTOS DE CARGA DO AMBIENTE OPERACIONAL PARA AREA DE STAGING ---------------------------*/
 
 
-EXEC SP_OLTP_CARREGA_CLIENTES_E_ACOMPANHANTES '20190521'
-EXEC SP_OLTP_CARGAS_SIMPLES '20190521'
-EXEC SP_CARREGA_FATO '20190521'
+EXEC SP_OLTP_CARREGA_CLIENTES_E_ACOMPANHANTES '20190721'
+EXEC SP_OLTP_CARGAS_SIMPLES '20190721'
+EXEC SP_CARREGA_FATO '20190721'
 
 SELECT * FROM TB_AUX_ACOMPANHANTE
 SELECT * FROM TB_AUX_CLIENTE
@@ -263,11 +262,8 @@ AS
 		DECLARE @VALORHORA NUMERIC(10,2)
 
 		DECLARE USUARIO CURSOR FOR 
-		SELECT idUsuario, nome, cpf,telefone, genero, usuario, dataNascimento FROM Usuario
+		SELECT idUsuario, nome, cpf,telefone, genero, usuario, dataNascimento FROM Usuario WHERE (data_atualizacao >= @DATACARGA)   
 
-		DELETE FROM TB_AUX_CLIENTE WHERE data_carga = @DATACARGA
-		DELETE FROM TB_AUX_ACOMPANHANTE WHERE data_carga = @DATACARGA	
-		
 		OPEN USUARIO
 		FETCH USUARIO INTO @IDUSUARIO,@NOME,@CPF,@TELEFONE,@GENERO,@USUARIO,@NASCIMENTO
 
@@ -301,32 +297,26 @@ GO
 CREATE PROCEDURE SP_OLTP_CARGAS_SIMPLES (@DATACARGA DATETIME)
 AS
 	BEGIN
-		
-		DELETE FROM TB_AUX_OPORTUNIDADE WHERE data_carga = @DATACARGA
-		DELETE FROM TB_AUX_SERVICO		WHERE data_carga = @DATACARGA
-		DELETE FROM TB_AUX_TRANSACAO	WHERE data_carga = @DATACARGA	
-		DELETE FROM TB_AUX_LOCALIDADE WHERE data_carga = @DATACARGA
-		DELETE FROM TB_AUX_TIPO_ACOMPANHAMENTO WHERE data_carga = @DATACARGA
-
+	
 		INSERT INTO TB_AUX_LOCALIDADE (data_carga,codigo,estado,cidade,rua,bairro,id_servico)
-		(SELECT @DATACARGA,idDetalhesEncontro,estado,cidade,rua,bairro,idServico FROM DetalhesEncontro)
+		(SELECT @DATACARGA,idDetalhesEncontro,estado,cidade,rua,bairro,idServico FROM DetalhesEncontro WHERE (data_atualizacao >= @DATACARGA))
 	
 		INSERT INTO TB_AUX_TRANSACAO (data_carga,codigo,id_servico,data_transacao)
-		(SELECT @DATACARGA,idTransacao,idServico,dataEHora FROM Transacao)
+		(SELECT @DATACARGA,idTransacao,idServico,dataEHora FROM Transacao WHERE (data_atualizacao >= @DATACARGA))
 
 		INSERT INTO TB_AUX_OPORTUNIDADE (data_carga, codigo, id_tipo_acompanhamento, id_cliente, id_servico,descricao,titulo,qtd_candidatos,status)
 		(SELECT @DATACARGA,op.idOportunidade,op.idTipoAcompanhamento,op.idCliente,op.idServico,op.descricao,op.titulo,
 			(SELECT COUNT(cd.idCandidatura) AS CANDIDATURA  FROM Candidatura as cd 
-			Where cd.idOportunidade = op.idOportunidade GROUP BY cd.idOportunidade ), 
-		status FROM Oportunidade as op)
+			Where cd.idOportunidade = op.idOportunidade GROUP BY cd.idOportunidade), 
+		status FROM Oportunidade as op WHERE (data_atualizacao >= @DATACARGA))
 
 		INSERT INTO TB_AUX_SERVICO(data_carga,codigo,data_solicitacao,id_acompanhante,id_cliente,id_tipo_acompanhamento,valor_total,status)
 		(SELECT @DATACARGA,se.idServico,se.dataSolicitacao,se.idAcompanhante,se.idCliente,se.idTipoAcompanhamento,
 			(SELECT dt.valor FROM DetalhesEncontro AS dt WHERE dt.idServico = se.idServico),
-		status FROM Servico as se)
+		status FROM Servico as se WHERE (data_atualizacao >= @DATACARGA))
 
 		INSERT INTO TB_AUX_TIPO_ACOMPANHAMENTO (data_carga,codigo,tipo_acompanhamento,descricao)
-		(SELECT @DATACARGA,idTipoAcompanhamento,TipoAcompanhamento,descricao FROM TipoAcompanhamento)
+		(SELECT @DATACARGA,idTipoAcompanhamento,TipoAcompanhamento,descricao FROM TipoAcompanhamento WHERE (data_atualizacao >= @DATACARGA))
 	END
 
 
@@ -335,7 +325,7 @@ GO
 
 
 --- CARREGA DADOS DAS TABELAS AUXILIARES PARA TABELA AUXILIAR DO FATO
-ALTER PROCEDURE SP_CARREGA_FATO (@DATACARGA DATETIME)
+CREATE PROCEDURE SP_CARREGA_FATO (@DATACARGA DATETIME)
 AS
 	BEGIN
 		
