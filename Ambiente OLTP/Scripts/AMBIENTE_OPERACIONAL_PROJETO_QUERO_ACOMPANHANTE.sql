@@ -49,7 +49,6 @@ CREATE TABLE TipoAcompanhamento(
 	PRIMARY KEY(idTipoAcompanhamento)
 )
 
-
 CREATE TABLE Servico (
    idServico INT IDENTITY(1,1) NOT NULL,
    idCliente INT NOT NULL,
@@ -124,6 +123,7 @@ CREATE TABLE Transacao(
 	idServico INT NOT NULL,
 	dataEHora DATETIME NOT NULL,
 	data_atualizacao DATETIME NOT NULL,
+	pagamento_avista BIT NOT NULL DEFAULT 1,
 	PRIMARY KEY (idTransacao),
 	FOREIGN KEY (idServico) REFERENCES Servico(idServico)
 )
