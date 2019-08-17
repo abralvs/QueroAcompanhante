@@ -1,9 +1,9 @@
 /** 
  * UNIVERSIDADE FEDERAL DE SERGIPE 
- * DEPARTAMENTO DE SISTEMAS DE INFORMAÇÃO - DSI
- * SISTEMAS DE APOIO A DECISÃO -SAD
- * PROJETAR AMBIENTE DE SUPORTE A DECISÃO BASEADO EM SISTEMA DE ACOMPANHANTES
- * ABRAÃO ALVES E IGOR BRUNO
+ * DEPARTAMENTO DE SISTEMAS DE INFORMA??O - DSI
+ * SISTEMAS DE APOIO A DECIS?O -SAD
+ * PROJETAR AMBIENTE DE SUPORTE A DECIS?O BASEADO EM SISTEMA DE ACOMPANHANTES
+ * ABRA?O ALVES E IGOR BRUNO
  * 25/07/2019
  **/
  USE QueroAcompanhanteSAD
@@ -27,10 +27,13 @@ CREATE TABLE TB_AUX_OPORTUNIDADE(
 	id_tipo_acompanhamento INT NULL,
 	id_cliente INT NULL,
 	id_servico INT NULL,
+	id_acompanhante INT NULL,
+	id_acompahante_preferido INT NULL,
 	descricao VARCHAR(300) NULL,
 	titulo VARCHAR(50) NULL,
 	qtd_candidatos INT NULL, -- novo campo
-	status VARCHAR(45) NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FINALIZADA'))
+	status VARCHAR(45) NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FINALIZADA')),
+	eh_publica SMALLINT NOT NULL CHECK (eh_publica IN (1,0)),
 )
 
 CREATE TABLE TB_AUX_LOCALIDADE(
@@ -60,6 +63,7 @@ CREATE TABLE TB_AUX_TRANSACAO(
 	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
 	id_servico INT NULL,
+	pagamento_avista SMALLINT NOT NULL CHECK(pagamento_avista IN(1,0)),
 	data_transacao DATETIME NULL
 )
 
@@ -101,7 +105,7 @@ CREATE TABLE TB_AUX_FATO_ACOMPANHAMENTO(
 )
 
 
-/*--------------------------- CRIANDO TABELAS DE VIOLAÇÃO DA AREA DE STAGING ---------------------------*/
+/*--------------------------- CRIANDO TABELAS DE VIOLA??O DA AREA DE STAGING ---------------------------*/
 
 CREATE TABLE TB_VIO_CLIENTE(
 	id INT IDENTITY(1,1) NOT NULL,
@@ -301,8 +305,8 @@ AS
 		INSERT INTO TB_AUX_LOCALIDADE (data_carga,codigo,estado,cidade,rua,bairro,id_servico)
 		(SELECT @DATACARGA,idDetalhesEncontro,estado,cidade,rua,bairro,idServico FROM DetalhesEncontro WHERE (data_atualizacao >= @DATACARGA))
 	
-		INSERT INTO TB_AUX_TRANSACAO (data_carga,codigo,id_servico,data_transacao)
-		(SELECT @DATACARGA,idTransacao,idServico,dataEHora FROM Transacao WHERE (data_atualizacao >= @DATACARGA))
+		INSERT INTO TB_AUX_TRANSACAO (data_carga,codigo,id_servico, pagamento_avista, data_transacao)
+		(SELECT @DATACARGA,idTransacao,idServico, pagamento_avista, dataEHora FROM Transacao WHERE (data_atualizacao >= @DATACARGA))
 
 		INSERT INTO TB_AUX_OPORTUNIDADE (data_carga, codigo, id_tipo_acompanhamento, id_cliente, id_servico,descricao,titulo,qtd_candidatos,status)
 		(SELECT @DATACARGA,op.idOportunidade,op.idTipoAcompanhamento,op.idCliente,op.idServico,op.descricao,op.titulo,
