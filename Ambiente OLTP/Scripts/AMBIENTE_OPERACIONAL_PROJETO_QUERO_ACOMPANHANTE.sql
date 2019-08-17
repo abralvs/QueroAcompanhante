@@ -19,7 +19,7 @@ CREATE TABLE Usuario(
 	PRIMARY KEY (idUsuario)
 )
 
-CREATE TABLE Endereco( --
+CREATE TABLE Endereco( 
 	idEndereco INT IDENTITY(1,1) NOT NULL ,
 	estado CHAR(2) NOT NULL,
 	cidade VARCHAR(45) NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE Endereco( --
 
 CREATE TABLE Acompanhante(
    idAcompanhante INT NOT NULL,
-   valorHora NUMERIC(10,2) NULL DEFAULT NULL,
+   valorHora NUMERIC(10,2) NOT NULL ,
    credencialContaDigital VARCHAR(45) NULL DEFAULT NULL,
    data_atualizacao DATETIME NOT NULL,
    PRIMARY KEY (idAcompanhante),
@@ -52,14 +52,10 @@ CREATE TABLE TipoAcompanhamento(
 CREATE TABLE Servico (
    idServico INT IDENTITY(1,1) NOT NULL,
    idCliente INT NOT NULL,
-   idAcompanhante INT NOT NULL,
-   idTipoAcompanhamento INT NOT NULL,
-   dataSolicitacao DATETIME NULL DEFAULT NULL,	
-   status VARCHAR(45) NOT NULL CHECK(status IN ('PENDENTE','ACEITA','RECUSADA','CANCELADA','FINALIZADA')),
+   idAcompanhante INT NOT NULL,	
+   status VARCHAR(45) NOT NULL CHECK(status IN ('EM ANDAMENTO', 'CANCELADA', 'FINALIZADA')),
    data_atualizacao DATETIME NOT NULL,
    PRIMARY KEY(idServico),
-   FOREIGN KEY (idCliente) REFERENCES Usuario(idUsuario),
-   FOREIGN KEY (idAcompanhante) REFERENCES Acompanhante(idAcompanhante),
    FOREIGN KEY (idTipoAcompanhamento) REFERENCES TipoAcompanhamento(idTipoAcompanhamento)
 )
 
@@ -77,17 +73,19 @@ CREATE TABLE Mensagem (
 
 CREATE TABLE Oportunidade (
    idOportunidade INT IDENTITY(1,1) NOT NULL,
-   descricao VARCHAR(300) NULL DEFAULT NULL,
+   data_solicitacao DATETIME NOT NULL,
    titulo VARCHAR(50) NOT NULL,
+   descricao VARCHAR(300) NULL DEFAULT NULL,
+   idTipoAcompanhamento INT NOT NULL,
    idCliente INT NOT NULL,
-   idServico INT DEFAULT NULL,
-   idTipoAcompanhamento INT NOT NULL, 
-   status VARCHAR(45) NULL CHECK(status IN ('ABERTA','OCUPADA','FINALIZADA')),
+   idAcompanhante INT NULL, 
+   idAcompanhnatePreferido INT NULL,
+   status VARCHAR(45) NULL CHECK(status IN ('ABERTA','OCUPADA','CANCELADA')),
+   EhPublica SMALLINT NOT NULL,
    data_atualizacao DATETIME NOT NULL,
-   FOREIGN KEY (idTipoAcompanhamento) REFERENCES TipoAcompanhamento(idTipoAcompanhamento),
    PRIMARY KEY(idOportunidade),
+   FOREIGN KEY (idTipoAcompanhamento) REFERENCES TipoAcompanhamento(idTipoAcompanhamento),
    FOREIGN KEY (idCliente) REFERENCES Usuario(idUsuario),
-   FOREIGN KEY (idServico) REFERENCES Servico(idServico)
 )
 
 CREATE TABLE DetalhesEncontro(
@@ -122,8 +120,8 @@ CREATE TABLE Transacao(
 	idTransacao INT IDENTITY(1,1) NOT NULL,
 	idServico INT NOT NULL,
 	dataEHora DATETIME NOT NULL,
+	pagamento_avista SMALLINT NOT NULL DEFAULT 1,
 	data_atualizacao DATETIME NOT NULL,
-	pagamento_avista BIT NOT NULL DEFAULT 1,
 	PRIMARY KEY (idTransacao),
 	FOREIGN KEY (idServico) REFERENCES Servico(idServico)
 )
