@@ -128,8 +128,6 @@ CREATE TABLE TB_VIO_OPORTUNIDADE(
 	status VARCHAR(45) NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FINALIZADA')),
 	eh_publica SMALLINT NOT NULL CHECK (eh_publica IN (1,0)),
 	id_tipo_acompanhamento INT NULL,
-	id_cliente INT NULL,
-	id_acompanhante INT NULL,
 	qtd_candidatos INT NULL, -- novo campo
 	data_violacao DATETIME NOT NULL,
 	violacao VARCHAR(100) NOT NULL
@@ -181,9 +179,11 @@ CREATE TABLE TB_VIO_TRANSACAO(
 
 CREATE TABLE TB_VIO_SERVICO(
 	id INT IDENTITY(1,1) NOT NULL,
+	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
 	id_cliente INT NULL,
 	id_acompanhante INT NULL,
+	id_oportunidade INT NOT NULL,
 	valor_total NUMERIC(10,2), -- novo campo
 	status VARCHAR(45) NULL CHECK(status IN('EM ANDAMENTO', 'CANCELADA', 'FINALIZADA')),
 	data_violacao DATETIME NOT NULL,
