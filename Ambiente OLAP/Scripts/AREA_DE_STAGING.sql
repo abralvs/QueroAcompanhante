@@ -25,6 +25,7 @@ CREATE TABLE TB_AUX_CLIENTE(
 CREATE TABLE TB_AUX_OPORTUNIDADE(	
 	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
+	data_solicitacao DATETIME NULL,
 	titulo VARCHAR(50) NULL,
 	descricao VARCHAR(300) NULL,
 	status VARCHAR(45) NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FINALIZADA')),
@@ -97,7 +98,6 @@ CREATE TABLE TB_AUX_FATO_ACOMPANHAMENTO(
 	id_tipo_acompanhamento INT NULL,
 	qtd INT NULL,
 	valor NUMERIC(10,2) NULL,
-	qtd_candidatos INT NULL
 )
 
 
@@ -123,6 +123,7 @@ CREATE TABLE TB_VIO_OPORTUNIDADE(
 	id INT IDENTITY(1,1) NOT NULL,
 	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
+	data_solicitacao DATETIME NULL,
 	titulo VARCHAR(50) NULL,
 	descricao VARCHAR(300) NULL,
 	status VARCHAR(45) NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FINALIZADA')),
@@ -219,7 +220,6 @@ CREATE TABLE TB_VIO_FATO_ACOMPANHAMENTO(
 	id_tipo_acompanhamento INT NULL,
 	qtd INT NULL,
 	valor NUMERIC(10,2) NULL,
-	qtd_candidatos INT NULL,	
 	data_violacao DATETIME NOT NULL,
 	violacao VARCHAR(100) NOT NULL
 	PRIMARY KEY(id)
@@ -257,7 +257,7 @@ DELETE FROM TB_AUX_FATO_ACOMPANHAMENTO
 
 
 --- CARREGA DADOS DO AMBIENTE OPERACIONAL PARA AS TABELAS AUXILIARES DE CLIENTE E ACOMPANHANTE
-ALTER PROCEDURE SP_OLTP_CARREGA_CLIENTES_E_ACOMPANHANTES (@DATACARGA DATETIME)
+CREATE PROCEDURE SP_OLTP_CARREGA_CLIENTES_E_ACOMPANHANTES (@DATACARGA DATETIME)
 AS
 	BEGIN
 		DECLARE @IDUSUARIO INT
@@ -307,7 +307,7 @@ GO
 /* ------------------------------------------------------------------------------------------------------------ */
 
 --- CARREGA DADOS DO AMBIENTE OPERACIONAL PARA AS TABELAS AUXILIARES DE ENDERECO, OPORTUNIDADE, SERVICO, TRANSACAO, TIPO DE ACOMPANHANMENTO
-ALTER PROCEDURE SP_OLTP_CARGAS_SIMPLES (@DATACARGA DATETIME)
+CREATE PROCEDURE SP_OLTP_CARGAS_SIMPLES (@DATACARGA DATETIME)
 AS
 	BEGIN
 		
@@ -317,8 +317,6 @@ AS
 		DELETE TB_AUX_SERVICO			  WHERE @DATACARGA = data_carga
 		DELETE TB_AUX_TIPO_ACOMPANHAMENTO WHERE @DATACARGA = data_carga
 
-
-
 		INSERT INTO TB_AUX_LOCALIDADE (data_carga,codigo,estado,cidade,rua,bairro,id_servico)
 		(SELECT @DATACARGA,idDetalhesEncontro,estado,cidade,rua,bairro,idServico FROM DetalhesEncontro WHERE (data_atualizacao >= @DATACARGA))
 	
@@ -327,8 +325,8 @@ AS
 
 		INSERT INTO TB_AUX_OPORTUNIDADE (data_carga, codigo,titulo,descricao,status,eh_publica,id_tipo_acompanhamento,qtd_candidatos)
 		(SELECT @DATACARGA,op.idOportunidade, op.titulo,op.descricao,op.status,op.EhPublica,op.idTipoAcompanhamento,
-			(SELECT COUNT(cd.idCandidatura) AS CANDIDATURA  FROM Candidatura as cd 
-			Where cd.idOportunidade = op.idOportunidade GROUP BY cd.idOportunidade)
+			isnull((SELECT COUNT(cd.idCandidatura) AS CANDIDATURA  FROM Candidatura as cd 
+			Where cd.idOportunidade = op.idOportunidade GROUP BY cd.idOportunidade),0)
 		FROM Oportunidade as op WHERE (data_atualizacao >= @DATACARGA))
 
 		INSERT INTO TB_AUX_SERVICO(data_carga,codigo,id_cliente,id_acompanhante,id_oportunidade,valor_total,status)
@@ -341,13 +339,12 @@ AS
 	
 	END
 
-
 GO
 /* ------------------------------------------------------------------------------------------------------------ */
 
 
 --- CARREGA DADOS DAS TABELAS AUXILIARES PARA TABELA AUXILIAR DO FATO
-ALTER PROCEDURE SP_CARREGA_FATO (@DATACARGA DATETIME)
+CREATE PROCEDURE SP_CARREGA_FATO (@DATACARGA DATETIME)
 AS
 	BEGIN
 		
@@ -370,7 +367,7 @@ AS
 
 		DECLARE servico CURSOR FOR 
 		SELECT codigo,id_cliente,id_acompanhante,id_oportunidade,valor_total,status 
-		FROM TB_AUX_SERVICO WHERE status = 'FINALIZADA'
+		FROM TB_AUX_SERVICO 
 			   
 		DELETE TB_AUX_FATO_ACOMPANHAMENTO WHERE @DATACARGA = data_carga
 
@@ -388,10 +385,9 @@ AS
 				SET @IDADE					   = (SELECT idade FROM TB_AUX_CLIENTE WHERE codigo = @IDCLIENTE)
 				SET @IDFAIXAETARIACLEINTE	   = (SELECT id FROM DIM_FAIXA_ETARIA WHERE @IDADE >= idade_inicial AND @IDADE <= idade_final)
 				SET @IDTEMPOTRANSACAO		   = (SELECT id FROM DIM_TEMPO WHERE data = CAST((SELECT data_transacao FROM TB_AUX_TRANSACAO WHERE id_servico = @CODIGO) AS DATE))
-				SET @QTDCANDIDATOS			   = (SELECT qtd_candidatos FROM TB_AUX_OPORTUNIDADE WHERE @IDOPORTUNIDADE = codigo)
 
-				INSERT INTO TB_AUX_FATO_ACOMPANHAMENTO (data_carga,id_tempo,id_cliente,id_acompanhante,id_localidade,id_oportunidade,id_servico,id_transacao,id_faixa_etaria_cliente,id_faixa_etaria_acompanhante,id_data_transacao,id_tipo_acompanhamento,qtd,valor,qtd_candidatos)
-				VALUES(@DATACARGA,@IDTEMPO,@IDCLIENTE,@IDACOMPANHANTE,@IDLOCALIDADE,@IDOPORTUNIDADE,@CODIGO,@IDTRANSACAO,@IDFAIXAETARIACLEINTE,@IDFAIXAETARIAACOMPANHANTE,@IDTEMPOTRANSACAO,@IDTIPOACOMPANHAMENTO,1,@VALOR,isnull(@QTDCANDIDATOS,0))
+				INSERT INTO TB_AUX_FATO_ACOMPANHAMENTO (data_carga,id_tempo,id_cliente,id_acompanhante,id_localidade,id_oportunidade,id_servico,id_transacao,id_faixa_etaria_cliente,id_faixa_etaria_acompanhante,id_data_transacao,id_tipo_acompanhamento,qtd,valor)
+				VALUES(@DATACARGA,@IDTEMPO,@IDCLIENTE,@IDACOMPANHANTE,@IDLOCALIDADE,@IDOPORTUNIDADE,@CODIGO,@IDTRANSACAO,@IDFAIXAETARIACLEINTE,@IDFAIXAETARIAACOMPANHANTE,@IDTEMPOTRANSACAO,@IDTIPOACOMPANHAMENTO,1,@VALOR)
 
 
 				FETCH servico INTO @CODIGO,@IDCLIENTE,@IDACOMPANHANTE,@IDOPORTUNIDADE,@VALOR,@STATUS
