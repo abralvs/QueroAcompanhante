@@ -1,251 +1,11 @@
-/**
- * UNIVERSIDADE FEDERAL DE SERGIPE
- * DEPARTAMENTO DE SISTEMAS DE INFORMA√á√ÉO - DSI
- * SISTEMAS DE APOIO A DECIS√ÉO -SAD
- * PROJETAR AMBIENTE DE SUPORTE A DECIS√ÉO BASEADO EM SISTEMA DE ACOMPANHANTES
- * ABRA√ÉO ALVES E IGOR BRUNO
- **/
-DROP DATABASE QueroAcompanhanteSAD;
-CREATE DATABASE QueroAcompanhanteSAD;
-USE QueroAcompanhanteSAD;
-
--- -----------------------------------------------------
--- Table DIM_TEMPO
--- -----------------------------------------------------
-CREATE TABLE DIM_TEMPO (
-                           id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                           nivel VARCHAR(3) NOT NULL,
-                           data DATE NULL,
-                           dia SMALLINT NULL,
-                           nomeDia VARCHAR(20) NULL,
-                           mes SMALLINT NULL,
-                           nomeMes VARCHAR(20) NULL,
-                           trimestre VARCHAR(45) NULL,
-                           nomeTrimestre VARCHAR(45) NULL,
-                           semestre VARCHAR(45) NULL,
-                           nomeSemestre VARCHAR(45) NULL,
-                           ano SMALLINT NOT NULL
-)
-
--- -----------------------------------------------------
--- Table DIM_LOCALIDADE
--- -----------------------------------------------------
-CREATE TABLE DIM_LOCALIDADE (
-                                id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                                codigo_localidade INT NOT NULL,
-                                estado VARCHAR(45) NOT NULL,
-                                cidade VARCHAR(45) NOT NULL,
-                                rua VARCHAR(45) NOT NULL,
-                                bairro VARCHAR(45) NOT NULL
-)
-
--- -----------------------------------------------------
--- Table DIM_CLIENTE
--- -----------------------------------------------------
-CREATE TABLE  DIM_CLIENTE (
-                              id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                              codigo_cliente INT NOT NULL,
-                              nome VARCHAR(45) NOT NULL,
-                              cpf VARCHAR(11) NOT NULL,
-                              telefone VARCHAR(13) NOT NULL,
-                              genero VARCHAR(45) NOT NULL,
-                              usuario VARCHAR(45) NOT NULL,
-                              idade SMALLINT NOT NULL,
-                              dataNascimento DATE NOT NULL
-)
-
--- -----------------------------------------------------
--- Table DIM_OPORTUNIDADE
--- -----------------------------------------------------
-CREATE TABLE DIM_OPORTUNIDADE (
-                                  id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                                  codigo_oportunidade INT NOT NULL,
-                                  titulo VARCHAR(50) NOT NULL,
-                                  descricao VARCHAR(300) NOT NULL,
-                                  status VARCHAR(45) NOT NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FECHADA')),
-                                  eh_publica SMALLINT NOT NULL CHECK(eh_publica IN (1,0)),
-								  qtd_candidatos INT NOT NULL, -- adicionei esse campo aqui e retirei ele do fato
-                                  dt_inicio DATE NOT NULL,
-                                  dt_fim DATE NULL,
-                                  fl_corrente CHAR(3) NOT NULL CHECK(fl_corrente IN ('SIM','NAO'))
-)
-
-
--- -----------------------------------------------------
--- Table DIM_ACOMPANHANTE
--- -----------------------------------------------------
-CREATE TABLE DIM_ACOMPANHANTE (
-                                  id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                                  codigo_acompanhante INT NOT NULL,
-                                  nome VARCHAR(45) NOT NULL,
-                                  cpf VARCHAR(45) NOT NULL,
-                                  telefone VARCHAR(45) NOT NULL,
-                                  genero VARCHAR(45) NOT NULL,
-                                  usuario VARCHAR(45) NOT NULL,
-                                  idade INT NOT NULL,
-                                  dataNascimento DATE NOT NULL,
-                                  valorHora DECIMAL(10,0) NOT NULL
-)
-
--- -----------------------------------------------------
--- Table DIM_SERVICO
--- -----------------------------------------------------
-CREATE TABLE DIM_SERVICO (
-                             id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                             codigo_servico INT NOT NULL,
-                             status VARCHAR(45) NOT NULL CHECK (status IN('EM ANDAMENTO', 'CANCELADA', 'CONCLUIDA')),
-                             dt_inicio DATE NOT NULL,
-                             dt_fim DATE NULL,
-                             fl_corrente CHAR(3) NOT NULL CHECK(fl_corrente IN ('SIM','NAO'))
-)
-
--- -----------------------------------------------------
--- Table DIM_TRANSACAO
--- -----------------------------------------------------
-CREATE TABLE DIM_TRANSACAO (
-                               id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                               tipo_pagamento VARCHAR(50) CHECK(tipo_pagamento IN ('EM ESPECIE','CARTAO CREDITO/DEBITO','NAO REALIZADO'))
-)
--- -----------------------------------------------------
--- Table DIM_FAIXA_ETARIA
--- -----------------------------------------------------
-CREATE TABLE DIM_FAIXA_ETARIA (
-                                  id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                                  codigo_faixa_etaria INT NOT NULL,
-                                  descricao VARCHAR(45) NOT NULL,
-                                  idade_inicial SMALLINT NOT NULL,
-                                  idade_final SMALLINT NOT NULL
-)
-
--- -----------------------------------------------------
--- Table DIM_TIPO_ACOMPANHAMENTO
--- -----------------------------------------------------
-CREATE TABLE DIM_TIPO_ACOMPANHAMENTO (
-                                         id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                                         codigo_tipo_acompanhante INT NOT NULL,
-                                         tipo_acompanhamento VARCHAR(45) NOT NULL,
-                                         descricao VARCHAR(300) NOT NULL
-)
-
--- -----------------------------------------------------
--- Table FATO_ACOMPANHAMENTO
--- -----------------------------------------------------
-CREATE TABLE FATO_ACOMPANHAMENTO (
-                                     id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                                     id_tempo INT NOT NULL,
-                                     id_cliente INT NOT NULL,
-                                     id_acompanhante INT NOT NULL,
-                                     id_localidade INT NOT NULL,
-                                     id_oportunidade INT NULL,
-                                     id_servico INT NOT NULL,
-                                     id_transacao INT NOT NULL,
-                                     id_faixa_etaria_cliente INT NOT NULL,
-                                     id_faixa_etaria_acompanhante INT NOT NULL,
-                                     id_tipo_acompanhamento INT NOT NULL,
-                                     qtd INT NOT NULL,
-                                     valor DECIMAL(10,0) NOT NULL,
-                                     CONSTRAINT FK_DIM_TEMPO FOREIGN KEY(id_tempo) REFERENCES DIM_TEMPO(id),
-                                     CONSTRAINT FK_DIM_LOCALIDADE FOREIGN KEY(id_localidade) REFERENCES DIM_LOCALIDADE(id),
-                                     CONSTRAINT FK_DIM_CLIENTE FOREIGN KEY(id_cliente) REFERENCES DIM_CLIENTE(id),
-                                     CONSTRAINT FK_DIM_OPORTUNIDADE FOREIGN KEY (id_oportunidade) REFERENCES DIM_OPORTUNIDADE(id),
-                                     CONSTRAINT FK_DIM_ACOMPANHANTE FOREIGN KEY(id_acompanhante) REFERENCES DIM_ACOMPANHANTE(id),
-                                     CONSTRAINT FK_DIM_SERVICO FOREIGN KEY(id_servico) REFERENCES DIM_SERVICO(id),
-                                     CONSTRAINT Fk_DIM_TRANSACAO FOREIGN KEY(id_transacao) REFERENCES DIM_TRANSACAO(id),
-                                     CONSTRAINT Fk_DIM_FAIXA_ETARIA_CLIENTE FOREIGN KEY (id_faixa_etaria_cliente) REFERENCES DIM_FAIXA_ETARIA(id),
-                                     CONSTRAINT Fk_DIM_FAIXA_ETARIA_ACOMPANHANTE FOREIGN KEY (id_faixa_etaria_acompanhante) REFERENCES DIM_FAIXA_ETARIA(id),
-                                     CONSTRAINT Fk_DIM_TIPO_ACOMPANHAMENTO FOREIGN KEY (id_tipo_acompanhamento) REFERENCES DIM_TIPO_ACOMPANHAMENTO(id)
-)
-
--- -----------------------------------------------------
--- AGREGADO OPORTUNIDADE POR SEMESTRE
--- -----------------------------------------------------
-CREATE TABLE FATO_OPORTUNIDADE_SEMESTRE(
-                                           id INT NOT NULL PRIMARY  KEY,
-                                           id_tempo INT NOT NULL,
-                                           id_oportunidade INT NOT NULL,
-                                           qtd INT NOT NULL
-)
 
 -- -----------------------------------------------------
 -- EXECUTA PROCEDURES
 -- -----------------------------------------------------
-EXEC SP_POVOA_DIMS_PRE_CARREGADAS  '20180101', '20300101';
 EXEC SP_POVOA_DIMS							   '20190721';
 EXEC SP_POVOA_FATO_ACOMPANHAMENTO			   '20190721';
 
--- -----------------------------------------------------
--- PROCEDURE CARGA_DIMENSOES
--- -----------------------------------------------------
-CREATE PROCEDURE SP_POVOA_DIMS_PRE_CARREGADAS(@DT_INICIO_DIM_TEMPO DATETIME,@DT_FIM_DIM_TEMPO DATETIME)
-AS
-BEGIN
-	EXEC SP_POVOA_DIM_TEMPO         @DT_INICIO_DIM_TEMPO,@DT_FIM_DIM_TEMPO;
-	EXEC SP_POVOA_DIM_FAIXA_ETARIA;
-	EXEC SP_POVOA_DIM_TRANSACAO;
-END
-GO
-
-CREATE PROCEDURE SP_POVOA_DIMS(@DATA DATE)
-AS
-BEGIN
-    EXEC SP_POVOA_DIM_CLIENTE                @DATA;
-    EXEC SP_POVOA_DIM_ACOMPANHANTE           @DATA;
-    EXEC SP_POVOA_DIM_LOCALIDADE             @DATA;
-    EXEC SP_POVOA_DIM_OPORTUNIDADE           @DATA;
-    EXEC SP_POVOA_DIM_SERVICO                @DATA;
-    EXEC SP_POVOA_DIM_TIPO_ACOMPANHAMETO     @DATA;
-END
-
-
--- -----------------------------------------------------
--- PROCEDURE DIM_TEMPO
--- -----------------------------------------------------
-    CREATE PROCEDURE SP_POVOA_DIM_TEMPO(@INICIO DATE, @FIM DATE)
-    AS
-    BEGIN
-        DECLARE @QTD_DIAS INT, @DATA DATE, @DIA SMALLINT, @MES SMALLINT, @COUNT SMALLINT, @FIM_MES CHAR(3), @TRIMESTRE SMALLINT,
-                @NOME_TRI VARCHAR(20), @SEMESTRE SMALLINT, @NOME_SEMESTRE VARCHAR(20), @ANO SMALLINT, @DATA_TEMP DATE;
-        SET @QTD_DIAS = DATEDIFF(DD, @INICIO, @FIM);
-        SET @DATA = @INICIO;
-        SET NOCOUNT ON
-
-        WHILE(@QTD_DIAS >= 0)
-        BEGIN
-            SET @QTD_DIAS = @QTD_DIAS - 1;
-            SET @COUNT = (SELECT COUNT(id) FROM DIM_TEMPO WHERE @DATA = data);
-            IF(@COUNT = 0)
-                BEGIN
-                    SELECT  @ANO = YEAR(@DATA), @MES = MONTH(@DATA), @DIA = day(@DATA);
-
-                    SET @SEMESTRE = IIF(@MES <= 6, 1, 2);
-                    SET @TRIMESTRE =  datepart(qq,@DATA);
-                    SET @DATA_TEMP = DATEADD(DAY, 1, @DATA);
-
-                    SELECT @FIM_MES = IIF(@MES <> MONTH(@DATA_TEMP), 'SIM', 'NAO'),
-                           @NOME_SEMESTRE = CAST(@SEMESTRE AS VARCHAR(1)) + '¬∞ / ' + CAST(@ANO AS VARCHAR(4)),
-                           @NOME_TRI = CAST(@TRIMESTRE AS VARCHAR(1)) + '¬∞ / ' + CAST(@ANO AS VARCHAR(4));
-
-                    INSERT INTO DIM_TEMPO (nivel, data, dia, nomeDia, mes, nomeMes, trimestre, nomeTrimestre, semestre, nomeSemestre, ano)
-                    VALUES('DIA', @DATA, @DIA, DATENAME(DW, @DATA), @MES, DATENAME(MM, @DATA), @TRIMESTRE, @NOME_TRI, @SEMESTRE, @NOME_SEMESTRE, @ANO);
-
-                    IF(@FIM_MES = 'SIM')
-                        INSERT INTO DIM_TEMPO (nivel, data, dia, nomeDia, mes, nomeMes, trimestre, nomeTrimestre, semestre, nomeSemestre, ano)
-                        VALUES('MES', NULL, NULL, NULL, @MES, DATENAME(MM, @DATA), NULL, NULL, NULL, NULL, @ANO);
-
-                    IF(@ANO <> year(@DATA_TEMP))
-                        INSERT INTO DIM_TEMPO (nivel, data, dia, nomeDia, mes, nomeMes, trimestre, nomeTrimestre, semestre, nomeSemestre, ano)
-                        VALUES('ANO', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, @ANO);
-
-                    SET @DATA = @DATA_TEMP;
-                END
-            ELSE
-                BEGIN
-                    SET @DATA = DATEADD(DAY, 1, @DATA);
-                END
-        END
-    END
-GO
-
+SELECT * FROM FATO_ACOMPANHAMENTO
 -- -----------------------------------------------------
 -- PROCEDURE DIM_OPORTUNIDADE
 -- -----------------------------------------------------
@@ -272,7 +32,7 @@ BEGIN
         IF (@STATUS IS NULL OR @ID_TIPO_ACOMP IS NULL OR @EH_PUBLICA IS NULL OR @QTD_CANDIDATOS IS NULL
             OR @DESCRICAO IS NULL OR @TITULO IS NULL)
             INSERT INTO TB_VIO_OPORTUNIDADE(DATA_CARGA, CODIGO, TITULO, DESCRICAO, STATUS, EH_PUBLICA, ID_TIPO_ACOMPANHAMENTO, QTD_CANDIDATOS, DATA_VIOLACAO, VIOLACAO)
-            VALUES (@DATA_CARGA,  @CODIGO_OPORTUNIDADE, @TITULO, @DESCRICAO, @STATUS, @EH_PUBLICA, @ID_TIPO_ACOMP, @QTD_CANDIDATOS, GETDATE(), 'VIOLA√á√ÉO COM ATRIBUTO QUE √â NULO');
+            VALUES (@DATA_CARGA,  @CODIGO_OPORTUNIDADE, @TITULO, @DESCRICAO, @STATUS, @EH_PUBLICA, @ID_TIPO_ACOMP, @QTD_CANDIDATOS, GETDATE(), 'VIOLA«√O COM ATRIBUTO QUE … NULO');
         ELSE
             BEGIN
                 SET @COUNTER = (SELECT COUNT(ID) FROM DIM_OPORTUNIDADE WHERE CODIGO_OPORTUNIDADE = @CODIGO_OPORTUNIDADE);
@@ -328,7 +88,7 @@ BEGIN
             INSERT INTO TB_VIO_LOCALIDADE(DATA_CARGA, CODIGO, ID_USUARIO, ESTADO, CIDADE, RUA, BAIRRO, DATA_VIOLACAO,
                                           VIOLACAO)
             VALUES (@DATA_CARGA, @CODIGO_LOCALIDADE, @ID_SERVICO, @ESTADO, @CIDADE, @RUA, @BAIRRO, GETDATE(),
-                    'VIOLA√á√ÉO COM ATRIBUTO QUE √â NULO');
+                    'VIOLA«√O COM ATRIBUTO QUE … NULO');
         ELSE
             INSERT INTO DIM_LOCALIDADE(CODIGO_LOCALIDADE, ESTADO, CIDADE, RUA, BAIRRO)
             VALUES (@CODIGO_LOCALIDADE, @ESTADO, @CIDADE, @RUA, @BAIRRO);
@@ -369,7 +129,7 @@ BEGIN
             INSERT INTO TB_VIO_CLIENTE(DATA_CARGA, CODIGO, NOME, CPF, TELEFONE, GENERO, USUARIO, DATA_NASCIMENTO,
                                        IDADE, DATA_VIOLACAO, VIOLACAO)
             VALUES (@DATA_CARGA, @CODIGO_CLIENTE, @NOME, @CPF, @TELEFONE, @GENERO, @USUARIO, @DT_NASC, @IDADE, GETDATE(),
-                    'VIOLA√á√ÉO COM ATRIBUTO QUE √â NULO');
+                    'VIOLA«√O COM ATRIBUTO QUE … NULO');
         ELSE
 
             INSERT INTO DIM_CLIENTE(CODIGO_CLIENTE, NOME, CPF, TELEFONE, GENERO, USUARIO, IDADE, DATANASCIMENTO)
@@ -411,7 +171,7 @@ BEGIN
             INSERT INTO TB_VIO_ACOMPANHANTE(DATA_CARGA, CODIGO, NOME, CPF, TELEFONE, GENERO, USUARIO,
                                             DATA_NASCIMENTO, IDADE, VALOR_HORA, DATA_VIOLACAO, VIOLACAO)
             VALUES (@DATA_CARGA, @CODIGO, @NOME, @CPF, @TELEFONE, @GENERO, @USUARIO, @DT_NASC, @IDADE,
-                    @VALOR_HORA, GETDATE(), 'VIOLA√á√ÉO COM ATRIBUTO QUE √â NULO');
+                    @VALOR_HORA, GETDATE(), 'VIOLA«√O COM ATRIBUTO QUE … NULO');
         ELSE
             INSERT INTO DIM_ACOMPANHANTE(CODIGO_ACOMPANHANTE, NOME, CPF, TELEFONE, GENERO, USUARIO, IDADE, DATANASCIMENTO, VALORHORA)
             VALUES (@CODIGO, @NOME, @CPF, @TELEFONE, @GENERO, @USUARIO, @IDADE, @DT_NASC, @VALOR_HORA);
@@ -442,7 +202,7 @@ BEGIN
             @VALOR_TOTAL IS NULL OR @VALOR_TOTAL IS NULL)
             INSERT INTO TB_VIO_SERVICO(DATA_CARGA, CODIGO, ID_CLIENTE, ID_ACOMPANHANTE, ID_OPORTUNIDADE, VALOR_TOTAL, STATUS, DATA_VIOLACAO, VIOLACAO)
             VALUES (@DATA_CARGA, @CODIGO,  @ID_CLIENTE, @ID_ACOMPANHANTE, @ID_OPORTUNIDADE, @VALOR_TOTAL, @STATUS,
-                    GETDATE(), 'VIOLA√á√ÉO COM ATRIBUTO QUE √â NULO');
+                    GETDATE(), 'VIOLA«√O COM ATRIBUTO QUE … NULO');
         ELSE
             BEGIN
                 SET @COUNTER = (SELECT COUNT(ID) FROM DIM_SERVICO WHERE CODIGO_SERVICO = @CODIGO);
@@ -469,36 +229,7 @@ BEGIN
     CLOSE CURSOR_SC;
     DEALLOCATE CURSOR_SC;
 END
-GO
 
--- -----------------------------------------------------
--- PROCEDURE DIM_TRANSACAO
--- -----------------------------------------------------
-CREATE PROCEDURE SP_POVOA_DIM_TRANSACAO
-AS
-BEGIN
-   INSERT INTO DIM_TRANSACAO (TIPO_PAGAMENTO)
-   VALUES('EM ESPECIE'),('CARTAO CREDITO/DEBITO'),('NAO REALIZADO') 
-END
-GO
-
--- -----------------------------------------------------
--- PROCEDURE DIM_FAIXA_ETARIA
--- -----------------------------------------------------
-CREATE PROCEDURE SP_POVOA_DIM_FAIXA_ETARIA
-AS
-BEGIN
-    DECLARE
-        @JOVEM SMALLINT, @DESCRICAOJ VARCHAR(45), @ADULTO SMALLINT, @DESCRICAOA VARCHAR(45), @IDOSO SMALLINT, @DESCRICAOI VARCHAR(45);
-    SELECT @JOVEM = 15, @ADULTO = 25, @IDOSO = 65;
-    SELECT @DESCRICAOJ = 'JOVEM, FAIXA ET√ÅRIA DE ' + STR(@JOVEM) + ' A ' + STR(@ADULTO - 1),
-           @DESCRICAOA = 'ADULTO, FAIXA ET√ÅRIA DE ' + STR(@ADULTO) + ' A ' + STR(@IDOSO - 1),
-           @DESCRICAOI = 'IDOSO, FAIXA ET√ÅRIA DE ' + STR(@IDOSO) + ' EM DIANTE';
-
-    INSERT INTO DIM_FAIXA_ETARIA(CODIGO_FAIXA_ETARIA, DESCRICAO, IDADE_INICIAL, IDADE_FINAL) VALUES (1, @DESCRICAOJ, @JOVEM, @ADULTO - 1);
-    INSERT INTO DIM_FAIXA_ETARIA(CODIGO_FAIXA_ETARIA, DESCRICAO, IDADE_INICIAL, IDADE_FINAL) VALUES (2, @DESCRICAOA, @ADULTO, @IDOSO - 1);
-    INSERT INTO DIM_FAIXA_ETARIA(CODIGO_FAIXA_ETARIA, DESCRICAO, IDADE_INICIAL, IDADE_FINAL) VALUES (3, @DESCRICAOI, @IDOSO, @IDOSO + 70);
-END
 GO
 -- -----------------------------------------------------
 -- PROCEDURE DIM_TIPO_ACOMPANHAMENTO
@@ -522,7 +253,7 @@ BEGIN
                                                    TIPO_ACOMPANHAMENTO, DATA_VIOLACAO,
                                                    VIOLACAO)
             VALUES (@DATA_CARGA, @CODIGO, @DESCRICAO, @TIPO_ACOMP, GETDATE(),
-                    'VIOLA√á√ÉO COM ATRIBUTO QUE √â NULO');
+                    'VIOLA«√O COM ATRIBUTO QUE … NULO');
         ELSE
             INSERT INTO DIM_TIPO_ACOMPANHAMENTO(CODIGO_TIPO_ACOMPANHANTE, TIPO_ACOMPANHAMENTO, DESCRICAO)
             VALUES (@CODIGO, @TIPO_ACOMP, @DESCRICAO);
@@ -621,7 +352,17 @@ BEGIN
     DEALLOCATE CURSOR_F;
 END
 GO
+-- -----------------------------------------------------
+-- PROCEDURE CARGA_DIMENSOES
+-- -----------------------------------------------------
 
---------------------------------------------
--- CARGA AGREGADO
---------------------------------------------
+CREATE PROCEDURE SP_POVOA_DIMS(@DATA DATE)
+AS
+BEGIN
+    EXEC SP_POVOA_DIM_CLIENTE                @DATA;
+    EXEC SP_POVOA_DIM_ACOMPANHANTE           @DATA;
+    EXEC SP_POVOA_DIM_LOCALIDADE             @DATA;
+    EXEC SP_POVOA_DIM_OPORTUNIDADE           @DATA;
+    EXEC SP_POVOA_DIM_SERVICO                @DATA;
+    EXEC SP_POVOA_DIM_TIPO_ACOMPANHAMETO     @DATA;
+END

@@ -1,214 +1,15 @@
 /** 
- * UNIVERSIDADE FEDERAL DE SERGIPE 
- * DEPARTAMENTO DE SISTEMAS DE INFORMA??O - DSI
- * SISTEMAS DE APOIO A DECIS?O -SAD
- * PROJETAR AMBIENTE DE SUPORTE A DECIS?O BASEADO EM SISTEMA DE ACOMPANHANTES
- * ABRA?O ALVES E IGOR BRUNO
- * 25/07/2019
- **/
- USE QueroAcompanhanteSAD
+ * ------------------------- ATENÇÃO ------------------------- 
+ * ANTES DE EXECUTAR ESTE SCRIPT, VOCÊ DEVERÁ EXECUTAR
+ * O SCRIPT POVOANDO_DIMS_PRE_CARRGAVEIS.SQL NESTA MESMA PASTA,
+ * QUE REALIZA O TRABALHO DE CARREGAMENTO DE ALGUMAS DIMENSÕES
+ * COMO DIM_TEMPO, DIM_FAIXA_ETARIA, DIM_TRANSACAO, QUE SÃO 
+ * DIMENSÕES COM DADOS PRÉ-DEFINIDOS NECE´SSÁRIOS PARA ESTA ETAPA */
 
-/*--------------------------- CRIANDO TABELAS AUXILIARES DA AREA DE STAGING ---------------------------*/
-
-CREATE TABLE TB_AUX_CLIENTE(
-	data_carga DATETIME NOT NULL,
-	codigo INT NOT NULL,
-	nome VARCHAR(45) NULL,
-	cpf VARCHAR(11) NULL,
-	telefone VARCHAR(13) NULL,
-	genero VARCHAR(45) NULL,
-	usuario VARCHAR(45) NULL,
-	data_nascimento DATE NULL,
-	idade INT NULL
-) 
-
-CREATE TABLE TB_AUX_OPORTUNIDADE(	
-	data_carga DATETIME NOT NULL,
-	codigo INT NOT NULL,
-	data_solicitacao DATETIME NULL,
-	titulo VARCHAR(50) NULL,
-	descricao VARCHAR(300) NULL,
-	status VARCHAR(45) NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FECHADA')),
-	eh_publica SMALLINT NOT NULL CHECK (eh_publica IN (1,0)),
-	id_tipo_acompanhamento INT NULL,
-	qtd_candidatos INT NULL, -- novo campo
-)
-
-CREATE TABLE TB_AUX_LOCALIDADE(
-	data_carga DATETIME NOT NULL,
-	codigo INT NOT NULL,
-	id_servico INT NULL, 
-	estado CHAR(2) NULL,
-	cidade VARCHAR(45) NULL,
-	rua VARCHAR(45) NULL,
-	bairro VARCHAR(45) NULL
-)
-
-CREATE TABLE TB_AUX_ACOMPANHANTE(
-	data_carga DATETIME NOT NULL,
-	codigo INT NOT NULL,
-	nome VARCHAR(45) NULL,
-	cpf VARCHAR(11) NULL,
-	telefone VARCHAR(13) NULL,
-	genero VARCHAR(45) NULL,
-	usuario VARCHAR(45) NULL,
-	data_nascimento DATE NULL,
-	idade INT NULL,
-	valor_hora NUMERIC(10,2) NULL
-)
-
-CREATE TABLE TB_AUX_SERVICO(
-	data_carga DATETIME NOT NULL,
-	codigo INT NOT NULL,
-	id_cliente INT NULL,
-	id_acompanhante INT NULL,
-	id_oportunidade INT NULL,
-	valor_total NUMERIC(10,2), -- novo campo
-	status VARCHAR(45) NULL CHECK(status IN('EM ANDAMENTO', 'CANCELADA', 'CONCLUIDA'))
-)
-
-CREATE TABLE TB_AUX_TIPO_ACOMPANHAMENTO(
-	data_carga DATETIME NOT NULL,
-	codigo INT NOT NULL,
-	descricao VARCHAR(300) NULL,
-	tipo_acompanhamento VARCHAR(100) NULL
-)
-
-
-CREATE TABLE TB_AUX_FATO_ACOMPANHAMENTO(
-	data_carga DATETIME NOT NULL,
-	id_tempo INT  NULL,
-	id_cliente INT NULL,
-	id_acompanhante INT NULL,
-	id_localidade INT NULL,
-	id_oportunidade INT  NULL,
-	id_servico INT NULL,
-	id_transacao INT NULL,
-	id_faixa_etaria_cliente INT NULL,
-	id_faixa_etaria_acompanhante INT  NULL,
-	id_tipo_acompanhamento INT NULL,
-	qtd INT NULL,
-	valor NUMERIC(10,2) NULL,
-)
-
-
-/*--------------------------- CRIANDO TABELAS DE VIOLACAO DA AREA DE STAGING ---------------------------*/
-
-CREATE TABLE TB_VIO_CLIENTE(
-	id INT IDENTITY(1,1) NOT NULL,
-	data_carga DATETIME NOT NULL,
-	codigo INT NOT NULL,
-	nome VARCHAR(45) NULL,
-	cpf VARCHAR(11) NULL,
-	telefone VARCHAR(13) NULL,
-	genero VARCHAR(45) NULL,
-	usuario VARCHAR(45) NULL,
-	data_nascimento DATE NULL,
-	idade INT NULL,
-	data_violacao DATETIME NOT NULL,
-	violacao VARCHAR(100) NOT NULL
-	PRIMARY KEY(id)
-)
-
-CREATE TABLE TB_VIO_OPORTUNIDADE(
-	id INT IDENTITY(1,1) NOT NULL,
-	data_carga DATETIME NOT NULL,
-	codigo INT NOT NULL,
-	data_solicitacao DATETIME NULL,
-	titulo VARCHAR(50) NULL,
-	descricao VARCHAR(300) NULL,
-	status VARCHAR(45) NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FECHADA')),
-	eh_publica SMALLINT NOT NULL CHECK (eh_publica IN (1,0)),
-	id_tipo_acompanhamento INT NULL,
-	qtd_candidatos INT NULL, -- novo campo
-	data_violacao DATETIME NOT NULL,
-	violacao VARCHAR(100) NOT NULL
-	PRIMARY KEY(id)
-)
-
-CREATE TABLE TB_VIO_LOCALIDADE(
-	id INT IDENTITY(1,1) NOT NULL,
-	data_carga DATETIME NOT NULL,
-	codigo INT NOT NULL,
-	id_usuario INT NULL, 
-	estado CHAR(2) NULL,
-	cidade VARCHAR(45) NULL,
-	rua VARCHAR(100) NULL,
-	bairro VARCHAR(100) NULL,
-	data_violacao DATETIME NOT NULL,
-	violacao VARCHAR(100) NOT NULL
-	PRIMARY KEY(id)
-)
-
-CREATE TABLE TB_VIO_ACOMPANHANTE(
-	id INT IDENTITY(1,1) NOT NULL,
-	data_carga DATETIME NOT NULL,
-	codigo INT NOT NULL,
-	nome VARCHAR(45) NULL,
-	cpf VARCHAR(11) NULL,
-	telefone VARCHAR(13) NULL,
-	genero VARCHAR(45) NULL,
-	usuario VARCHAR(45) NULL,
-	data_nascimento DATE NULL,
-	idade INT NULL,
-	valor_hora NUMERIC(10,2) NULL,
-	data_violacao DATETIME NOT NULL,
-	violacao VARCHAR(100) NOT NULL
-	PRIMARY KEY(id)
-)
-
-CREATE TABLE TB_VIO_SERVICO(
-	id INT IDENTITY(1,1) NOT NULL,
-	data_carga DATETIME NOT NULL,
-	codigo INT NOT NULL,
-	id_cliente INT NULL,
-	id_acompanhante INT NULL,
-	id_oportunidade INT NOT NULL,
-	valor_total NUMERIC(10,2), -- novo campo
-	status VARCHAR(45) NULL CHECK(status IN('EM ANDAMENTO', 'CANCELADA', 'CONCLUIDA')),
-	data_violacao DATETIME NOT NULL,
-	violacao VARCHAR(100) NOT NULL
-	PRIMARY KEY(id)
-)
-
-CREATE TABLE TB_VIO_TIPO_ACOMPANHAMENTO(
-	id INT IDENTITY(1,1) NOT NULL,
-	data_carga DATETIME NOT NULL,
-	codigo INT  NOT NULL,
-	descricao VARCHAR(300) NULL,
-	tipo_acompanhamento VARCHAR(45) NULL,
-	data_violacao DATETIME NOT NULL,
-	violacao VARCHAR(100) NOT NULL
-	PRIMARY KEY(id)
-)
-
-
-CREATE TABLE TB_VIO_FATO_ACOMPANHAMENTO(
-	id INT IDENTITY(1,1) NOT NULL,
-	data_carga DATETIME NOT NULL,
-	id_tempo INT  NULL,
-	id_cliente INT NULL,
-	id_acompanhante INT NULL,
-	id_localidade INT NULL,
-	id_oportunidade INT  NULL,
-	id_servico INT NULL,
-	id_transacao INT NULL,
-	id_faixa_etaria_cliente INT NULL,
-	id_faixa_etaria_acompanhante INT  NULL,
-	id_tipo_acompanhamento INT NULL,
-	qtd INT NULL,
-	valor NUMERIC(10,2) NULL,
-	data_violacao DATETIME NOT NULL,
-	violacao VARCHAR(100) NOT NULL
-	PRIMARY KEY(id)
-
-)
 
 /*--------------------------- PROCEDIMENTOS DE CARGA DO AMBIENTE OPERACIONAL PARA AREA DE STAGING ---------------------------*/
 
-EXEC SP_OLTP_CARREGA_CLIENTES_E_ACOMPANHANTES '20190721'
-EXEC SP_OLTP_CARGAS_SIMPLES '20190721'
-EXEC SP_CARREGA_FATO '20190721'
+EXEC SO_EXECUTA_PROCEDIMENTOS_DE_CARGA '20190721'
 
 /* ------------------------------------------------------------------------------------------------------------ */
 
@@ -342,3 +143,14 @@ AS
 			DEALLOCATE servico
 	END	
 	
+GO
+
+CREATE PROCEDURE SO_EXECUTA_PROCEDIMENTOS_DE_CARGA(@DATA_DE_CARGA DATETIME)
+AS
+BEGIN
+
+	EXEC SP_OLTP_CARREGA_CLIENTES_E_ACOMPANHANTES @DATA_DE_CARGA
+	EXEC SP_OLTP_CARGAS_SIMPLES @DATA_DE_CARGA
+	EXEC SP_CARREGA_FATO @DATA_DE_CARGA
+
+END

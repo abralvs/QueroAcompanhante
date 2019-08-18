@@ -1,8 +1,9 @@
 CREATE DATABASE QueroAcompanhanteSAD
 DROP DATABASE QueroAcompanhanteSAD
 USE QueroAcompanhanteSAD
-
-/*---------------------------------------- CRIANDO TABELAS DO BANCO  -----------------------------------------------------*/
+												--- -----------------------------------------
+												--		CRIANDO TABELAS DO BANCO		   --	
+												--- -----------------------------------------
 
 CREATE TABLE Usuario(
 	idUsuario INT IDENTITY(1,1) NOT NULL ,
@@ -127,15 +128,18 @@ CREATE TABLE Transacao(
 	FOREIGN KEY (idServico) REFERENCES Servico(idServico)
 )
 
-/*---------------------------------------- PROCEDIMENTOS ARMAZENADOS PARA POPULAR O BANCO-----------------------------------------------------*/
+
+									--- ----------------------------------------------------------------------
+									--				PROCEDIMENTOS ARMAZENADOS PARA POPULAR O BANCO			--
+									--- ----------------------------------------------------------------------
 
 EXEC SP_INSERE_USUARIOS 
 EXEC SP_INSERE_SOLICITACOES_SERVICO 
 EXEC SP_INSERIR_NEGOCIACAO 
 
-GO
-
+--- ----------------------------------------------------------------------
 -- INSERINDO CLIENTES E ACOMPANHANTES  
+--- ----------------------------------------------------------------------
 CREATE PROCEDURE SP_INSERE_USUARIOS 
 AS
 	BEGIN
@@ -163,8 +167,10 @@ AS
 	END
 
 GO
-
+--- --------------------------------------------------------------------------------------
 -- INSERINDO OPORTUNIDADES, CANDIDATURAS, SOLICITACOES DE SERVICO E TIPOS DE SERVICO
+--- --------------------------------------------------------------------------------------
+
 CREATE PROCEDURE SP_INSERE_SOLICITACOES_SERVICO
 AS 
 	BEGIN
@@ -199,8 +205,9 @@ AS
 	END
 
 GO
-
+--- ---------------------------------------------------------------------------
 -- INSERINDO A NEGOCIAÇÃO PARA O SERVIÇO, DIALOGOS ENCONTROS E TRANSACOES
+--- ---------------------------------------------------------------------------
 CREATE PROCEDURE SP_INSERIR_NEGOCIACAO
 AS 
 	BEGIN
