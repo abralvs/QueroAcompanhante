@@ -160,6 +160,16 @@ CREATE TABLE FATO_ACOMPANHAMENTO (
 )
 
 -- -----------------------------------------------------
+-- AGREGADO OPORTUNIDADE POR SEMESTRE
+-- -----------------------------------------------------
+CREATE TABLE FATO_OPORTUNIDADE_SEMESTRE(
+    id INT NOT NULL PRIMARY  KEY,
+    id_tempo INT NOT NULL,
+    id_oportunidade INT NOT NULL,
+    qtd INT NOT NULL
+)
+
+-- -----------------------------------------------------
 -- EXECUTA PROCEDURES
 -- -----------------------------------------------------
 EXEC SP_POVOA_DIM_TEMPO              '20180101', '20300101';
@@ -201,7 +211,32 @@ BEGIN
             BEGIN
                 SELECT  @ANO = YEAR(@DATA), @MES = MONTH(@DATA), @DIA = day(@DATA);
 
-                SET @SEMESTRE = IIF(@MES <= 6, 1,    DEALLOCATE CURSOR_LOC;
+                SET @SEMESTRE = IIF(@MES <= 6, 1, 2);
+                SET @TRIMESTRE =  datepart(qq,@DATA);
+                SET @DATA_TEMP = DATEADD(DAY, 1, @DATA);
+
+                SELECT @FIM_MES = IIF(@MES <> MONTH(@DATA_TEMP), 'SIM', 'NAO'),
+                       @NOME_SEMESTRE = CAST(@SEMESTRE AS VARCHAR(1)) + '° / ' + CAST(@ANO AS VARCHAR(4)),
+                       @NOME_TRI = CAST(@TRIMESTRE AS VARCHAR(1)) + '° / ' + CAST(@ANO AS VARCHAR(4));
+
+                INSERT INTO DIM_TEMPO (nivel, data, dia, nomeDia, mes, nomeMes, trimestre, nomeTrimestre, semestre, nomeSemestre, ano)
+                VALUES('DIA', @DATA, @DIA, DATENAME(DW, @DATA), @MES, DATENAME(MM, @DATA), @TRIMESTRE, @NOME_TRI, @SEMESTRE, @NOME_SEMESTRE, @ANO);
+
+                IF(@FIM_MES = 'SIM')
+                    INSERT INTO DIM_TEMPO (nivel, data, dia, nomeDia, mes, nomeMes, trimestre, nomeTrimestre, semestre, nomeSemestre, ano)
+                    VALUES('MES', NULL, NULL, NULL, @MES, DATENAME(MM, @DATA), NULL, NULL, NULL, NULL, @ANO);
+
+                IF(@ANO <> year(@DATA_TEMP))
+                    INSERT INTO DIM_TEMPO (nivel, data, dia, nomeDia, mes, nomeMes, trimestre, nomeTrimestre, semestre, nomeSemestre, ano)
+                    VALUES('ANO', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, @ANO);
+
+                SET @DATA = @DATA_TEMP;
+            END
+        ELSE
+            BEGIN
+                SET @DATA = DATEADD(DAY, 1, @DATA);
+            END
+    END
 END
 GO
 
@@ -384,34 +419,36 @@ AS
 BEGIN
     DECLARE @COUNTER SMALLINT;
     DECLARE
-        @CODIGO_OPORTUNIDADE INT, @ID_TIPO_ACOMP INT, @ID_CLIENTE INT, @ID_SERVICO INT, @TITULO VARCHAR(50), @DESCRICAO VARCHAR(300), @STATUS VARCHAR(45);
+        @CODIGO_OPORTUNIDADE INT, @ID_TIPO_ACOMP INT, @ID_CLIENTE INT, @ID_SERVICO INT, @TITULO VARCHAR(50), @DESCRICAO VARCHAR(300), @STATUS VARCHAR(45),
+        @EH_PLUBLICA SMALLINT;
     DECLARE CURSOR_OP CURSOR FOR SELECT CODIGO,
                                         ID_TIPO_ACOMPANHAMENTO,
                                         ID_CLIENTE,
                                         ID_SERVICO,
                                         DESCRICAO,
                                         TITULO,
-                                        STATUS
+                                        STATUS,
+                                        EH_PUBLICA
                                  FROM TB_AUX_OPORTUNIDADE
                                  WHERE DATA_CARGA = @DATA_CARGA;
 
     OPEN CURSOR_OP;
-    FETCH CURSOR_OP INTO @CODIGO_OPORTUNIDADE, @ID_TIPO_ACOMP, @ID_CLIENTE, @ID_SERVICO, @DESCRICAO, @TITULO, @STATUS
+    FETCH CURSOR_OP INTO @CODIGO_OPORTUNIDADE, @ID_TIPO_ACOMP, @ID_CLIENTE, @ID_SERVICO, @DESCRICAO, @TITULO, @STATUS, @EH_PUBLICA;
     WHILE (@@FETCH_STATUS = 0)
     BEGIN
         IF (@STATUS IS NULL OR @ID_TIPO_ACOMP IS NULL OR @ID_CLIENTE IS NULL OR @ID_CLIENTE IS NULL
             OR @DESCRICAO IS NULL OR @TITULO IS NULL)
             INSERT INTO TB_VIO_OPORTUNIDADE(DATA_CARGA, CODIGO, ID_TIPO_ACOMPANHAMENTO, ID_CLIENTE, ID_SERVICO,
-                                            DESCRICAO, TITULO, STATUS, DATA_VIOLACAO, VIOLACAO)
+                                            DESCRICAO, TITULO, STATUS, EH_PUBLICA, DATA_VIOLACAO, VIOLACAO)
             VALUES (@DATA_CARGA, @CODIGO_OPORTUNIDADE, @ID_TIPO_ACOMP, @ID_CLIENTE, @ID_SERVICO, @DESCRICAO, @TITULO,
-                    @STATUS, GETDATE(), 'VIOLAÇÃO COM ATRIBUTO QUE É NULO');
+                    @STATUS, @EH_PUBLICA, GETDATE(), 'VIOLAÇÃO COM ATRIBUTO QUE É NULO');
         ELSE
             BEGIN
                 SET @COUNTER = (SELECT COUNT(ID) FROM DIM_OPORTUNIDADE WHERE CODIGO_OPORTUNIDADE = @CODIGO_OPORTUNIDADE);
                 IF (@COUNTER = 0)
                     BEGIN
-                        INSERT INTO DIM_OPORTUNIDADE(CODIGO_OPORTUNIDADE, TITULO, DESCRICAO, STATUS, DT_INICIO, DT_FIM, FL_CORRENTE)
-                        VALUES (@CODIGO_OPORTUNIDADE, @TITULO, @DESCRICAO, @STATUS, GETDATE(), NULL, 'SIM');
+                        INSERT INTO DIM_OPORTUNIDADE(CODIGO_OPORTUNIDADE, TITULO, DESCRICAO, STATUS, EH_PUBLICA, DT_INICIO, DT_FIM, FL_CORRENTE)
+                        VALUES (@CODIGO_OPORTUNIDADE, @TITULO, @DESCRICAO, @STATUS, @EH_PUBLICA, GETDATE(), NULL, 'SIM');
                     END
                ELSE
                     BEGIN
@@ -423,12 +460,12 @@ BEGIN
                                 UPDATE DIM_OPORTUNIDADE
                                 SET DT_FIM = GETDATE(), FL_CORRENTE = 'NAO'
                                 WHERE CODIGO_OPORTUNIDADE = @CODIGO_OPORTUNIDADE AND FL_CORRENTE = 'SIM';
-                                INSERT INTO DIM_OPORTUNIDADE(CODIGO_OPORTUNIDADE, TITULO, DESCRICAO, STATUS, DT_INICIO, DT_FIM, FL_CORRENTE)
-                                VALUES (@CODIGO_OPORTUNIDADE, @TITULO, @DESCRICAO, @STATUS, GETDATE(), NULL, 'SIM');
+                                INSERT INTO DIM_OPORTUNIDADE(CODIGO_OPORTUNIDADE, TITULO, DESCRICAO, STATUS, EH_PUBLICA, DT_INICIO, DT_FIM, FL_CORRENTE)
+                                VALUES (@CODIGO_OPORTUNIDADE, @TITULO, @DESCRICAO, @STATUS, @EH_PUBLICA, GETDATE(), NULL, 'SIM');
                             END
                     END
             END
-        FETCH CURSOR_OP INTO @CODIGO_OPORTUNIDADE, @ID_TIPO_ACOMP, @ID_CLIENTE, @ID_SERVICO, @DESCRICAO, @TITULO, @STATUS;
+        FETCH CURSOR_OP INTO @CODIGO_OPORTUNIDADE, @ID_TIPO_ACOMP, @ID_CLIENTE, @ID_SERVICO, @DESCRICAO, @TITULO, @STATUS, @EH_PUBLICA;
     END
     CLOSE CURSOR_OP;
     DEALLOCATE CURSOR_OP;
@@ -537,26 +574,27 @@ GO
 CREATE PROCEDURE SP_POVOA_DIM_TRANSACAO(@DATA_CARGA DATE)
 AS
 BEGIN
-    DECLARE @CODIGO_TRANSACAO INT, @ID_SERVICO INT, @DATA_TRANSACAO DATE;
+    DECLARE @CODIGO_TRANSACAO INT, @ID_SERVICO INT, @PAGAMENTO_AVISTA SMALLINT, @DATA_TRANSACAO DATE;
     DECLARE CURSOR_T CURSOR FOR SELECT CODIGO,
                                        ID_SERVICO,
+                                       PAGAMENTO_AVISTA,
                                        DATA_TRANSACAO
                                 FROM TB_AUX_TRANSACAO
                                 WHERE DATA_CARGA = @DATA_CARGA;
     OPEN CURSOR_T;
-    FETCH CURSOR_T INTO @CODIGO_TRANSACAO, @ID_SERVICO, @DATA_TRANSACAO;
+    FETCH CURSOR_T INTO @CODIGO_TRANSACAO, @ID_SERVICO, @PAGAMENTO_AVISTA, @DATA_TRANSACAO;
 
     WHILE (@@FETCH_STATUS = 0)
     BEGIN
         IF (@CODIGO_TRANSACAO IS NULL OR @ID_SERVICO IS NULL OR @DATA_TRANSACAO IS NULL)
-            INSERT INTO TB_VIO_TRANSACAO(DATA_CARGA, CODIGO, ID_SERVICO, DATA_TRANSACAO,
+            INSERT INTO TB_VIO_TRANSACAO(DATA_CARGA, CODIGO, ID_SERVICO, PAGAMENTO_AVISTA, DATA_TRANSACAO,
                                          DATA_VIOLACAO, VIOLACAO)
-            VALUES (@DATA_CARGA, @CODIGO_TRANSACAO, @ID_SERVICO, @DATA_TRANSACAO, GETDATE(),
+            VALUES (@DATA_CARGA, @CODIGO_TRANSACAO, @ID_SERVICO, @PAGAMENTO_AVISTA, @DATA_TRANSACAO, GETDATE(),
                     'VIOLAÇÃO COM ATRIBUTO QUE É NULO');
         ELSE
-            INSERT INTO DIM_TRANSACAO(CODIGO_TRANSACAO) VALUES (@CODIGO_TRANSACAO);
+            INSERT INTO DIM_TRANSACAO(CODIGO_TRANSACAO) VALUES (@CODIGO_TRANSACAO, @PAGAMENTO_AVISTA);
 
-        FETCH CURSOR_T INTO @CODIGO_TRANSACAO, @ID_SERVICO, @DATA_TRANSACAO;
+        FETCH CURSOR_T INTO @CODIGO_TRANSACAO, @ID_SERVICO, @PAGAMENTO_AVISTA, @DATA_TRANSACAO;
     END
     CLOSE CURSOR_T;
     DEALLOCATE CURSOR_T;
@@ -729,3 +767,7 @@ BEGIN
     DEALLOCATE CURSOR_F;
 END
 GO
+
+--------------------------------------------
+-- CARGA AGREGADO
+--------------------------------------------
