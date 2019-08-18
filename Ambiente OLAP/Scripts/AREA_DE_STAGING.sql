@@ -18,22 +18,18 @@ CREATE TABLE TB_AUX_CLIENTE(
 	genero VARCHAR(45) NULL,
 	usuario VARCHAR(45) NULL,
 	data_nascimento DATE NULL,
-	idade INT
-)
+	idade INT NULL
+) 
 
 CREATE TABLE TB_AUX_OPORTUNIDADE(	
 	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
-	id_tipo_acompanhamento INT NULL,
-	id_cliente INT NULL,
-	id_servico INT NULL,
-	id_acompanhante INT NULL,
-	id_acompahante_preferido INT NULL,
-	descricao VARCHAR(300) NULL,
 	titulo VARCHAR(50) NULL,
-	qtd_candidatos INT NULL, -- novo campo
+	descricao VARCHAR(300) NULL,
 	status VARCHAR(45) NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FINALIZADA')),
 	eh_publica SMALLINT NOT NULL CHECK (eh_publica IN (1,0)),
+	id_tipo_acompanhamento INT NULL,
+	qtd_candidatos INT NULL, -- novo campo
 )
 
 CREATE TABLE TB_AUX_LOCALIDADE(
@@ -70,12 +66,11 @@ CREATE TABLE TB_AUX_TRANSACAO(
 CREATE TABLE TB_AUX_SERVICO(
 	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
-	data_solicitacao DATETIME NULL,
-	id_acompanhante INT NULL,
 	id_cliente INT NULL,
-	id_tipo_acompanhamento INT NULL,
+	id_acompanhante INT NULL,
+	id_oportunidade INT NULL,
 	valor_total NUMERIC(10,2), -- novo campo
-	status VARCHAR(45) NULL CHECK(status IN('PENDENTE', 'ACEITA', 'RECUSADA', 'CANCELADA', 'FINALIZADA'))
+	status VARCHAR(45) NULL CHECK(status IN('EM ANDAMENTO', 'CANCELADA', 'FINALIZADA'))
 )
 
 CREATE TABLE TB_AUX_TIPO_ACOMPANHAMENTO(
@@ -105,7 +100,7 @@ CREATE TABLE TB_AUX_FATO_ACOMPANHAMENTO(
 )
 
 
-/*--------------------------- CRIANDO TABELAS DE VIOLA??O DA AREA DE STAGING ---------------------------*/
+/*--------------------------- CRIANDO TABELAS DE VIOLACAO DA AREA DE STAGING ---------------------------*/
 
 CREATE TABLE TB_VIO_CLIENTE(
 	id INT IDENTITY(1,1) NOT NULL,
@@ -127,13 +122,14 @@ CREATE TABLE TB_VIO_OPORTUNIDADE(
 	id INT IDENTITY(1,1) NOT NULL,
 	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
+	titulo VARCHAR(50) NULL,
+	descricao VARCHAR(300) NULL,
+	status VARCHAR(45) NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FINALIZADA')),
+	eh_publica SMALLINT NOT NULL CHECK (eh_publica IN (1,0)),
 	id_tipo_acompanhamento INT NULL,
 	id_cliente INT NULL,
-	id_servico INT NULL,
-	descricao VARCHAR(300) NULL,
-	titulo VARCHAR(50) NULL,
+	id_acompanhante INT NULL,
 	qtd_candidatos INT NULL, -- novo campo
-	status VARCHAR(50) NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FINALIZADA')),
 	data_violacao DATETIME NOT NULL,
 	violacao VARCHAR(100) NOT NULL
 	PRIMARY KEY(id)
@@ -175,6 +171,7 @@ CREATE TABLE TB_VIO_TRANSACAO(
 	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
 	id_servico INT NULL,
+	pagamento_avista SMALLINT NOT NULL CHECK(pagamento_avista IN(1,0)),
 	data_transacao DATETIME NULL,
 	data_violacao DATETIME NOT NULL,
 	violacao VARCHAR(100) NOT NULL
@@ -183,14 +180,11 @@ CREATE TABLE TB_VIO_TRANSACAO(
 
 CREATE TABLE TB_VIO_SERVICO(
 	id INT IDENTITY(1,1) NOT NULL,
-	data_carga DATETIME NOT NULL,
 	codigo INT NOT NULL,
-	data_solicitacao DATETIME NULL,
-	id_acompanhante INT NULL,
 	id_cliente INT NULL,
-	id_tipo_acompanhamento INT NULL,
+	id_acompanhante INT NULL,
 	valor_total NUMERIC(10,2), -- novo campo
-	status VARCHAR(45) NULL CHECK(status IN('PENDENTE', 'ACEITA', 'RECUSADA', 'CANCELADA', 'FINALIZADA')),
+	status VARCHAR(45) NULL CHECK(status IN('EM ANDAMENTO', 'CANCELADA', 'FINALIZADA')),
 	data_violacao DATETIME NOT NULL,
 	violacao VARCHAR(100) NOT NULL
 	PRIMARY KEY(id)
@@ -211,23 +205,24 @@ CREATE TABLE TB_VIO_TIPO_ACOMPANHAMENTO(
 CREATE TABLE TB_VIO_FATO_ACOMPANHAMENTO(
 	id INT IDENTITY(1,1) NOT NULL,
 	data_carga DATETIME NOT NULL,
-	id_tempo INT NULL,
+	id_tempo INT  NULL,
 	id_cliente INT NULL,
-	id_acompanhamento INT NULL,
+	id_acompanhante INT NULL,
 	id_localidade INT NULL,
-	id_oportunidade INT NULL,
+	id_oportunidade INT  NULL,
 	id_servico INT NULL,
 	id_transacao INT NULL,
 	id_faixa_etaria_cliente INT NULL,
-	id_faixa_etaria_acompanhante INT NULL,
+	id_faixa_etaria_acompanhante INT  NULL,
 	id_data_transacao INT NULL,
 	id_tipo_acompanhamento INT NULL,
 	qtd INT NULL,
 	valor NUMERIC(10,2) NULL,
-	qtd_candidatos INT NULL,
+	qtd_candidatos INT NULL,	
 	data_violacao DATETIME NOT NULL,
 	violacao VARCHAR(100) NOT NULL
 	PRIMARY KEY(id)
+
 )
 
 
@@ -308,19 +303,20 @@ AS
 		INSERT INTO TB_AUX_TRANSACAO (data_carga,codigo,id_servico, pagamento_avista, data_transacao)
 		(SELECT @DATACARGA,idTransacao,idServico, pagamento_avista, dataEHora FROM Transacao WHERE (data_atualizacao >= @DATACARGA))
 
-		INSERT INTO TB_AUX_OPORTUNIDADE (data_carga, codigo, id_tipo_acompanhamento, id_cliente, id_servico,descricao,titulo,qtd_candidatos,status)
-		(SELECT @DATACARGA,op.idOportunidade,op.idTipoAcompanhamento,op.idCliente,op.idServico,op.descricao,op.titulo,
+		INSERT INTO TB_AUX_OPORTUNIDADE (data_carga, codigo,titulo,descricao,status,eh_publica,id_tipo_acompanhamento,qtd_candidatos)
+		(SELECT @DATACARGA,op.idOportunidade, op.titulo,op.descricao,op.status,op.EhPublica,op.idTipoAcompanhamento,
 			(SELECT COUNT(cd.idCandidatura) AS CANDIDATURA  FROM Candidatura as cd 
-			Where cd.idOportunidade = op.idOportunidade GROUP BY cd.idOportunidade), 
-		status FROM Oportunidade as op WHERE (data_atualizacao >= @DATACARGA))
+			Where cd.idOportunidade = op.idOportunidade GROUP BY cd.idOportunidade)
+		FROM Oportunidade as op WHERE (data_atualizacao >= @DATACARGA))
 
-		INSERT INTO TB_AUX_SERVICO(data_carga,codigo,data_solicitacao,id_acompanhante,id_cliente,id_tipo_acompanhamento,valor_total,status)
-		(SELECT @DATACARGA,se.idServico,se.dataSolicitacao,se.idAcompanhante,se.idCliente,se.idTipoAcompanhamento,
+		INSERT INTO TB_AUX_SERVICO(data_carga,codigo,id_cliente,id_acompanhante,valor_total,status)
+		(SELECT @DATACARGA,se.idServico,se.idAcompanhante,se.idCliente,
 			(SELECT dt.valor FROM DetalhesEncontro AS dt WHERE dt.idServico = se.idServico),
 		status FROM Servico as se WHERE (data_atualizacao >= @DATACARGA))
 
 		INSERT INTO TB_AUX_TIPO_ACOMPANHAMENTO (data_carga,codigo,tipo_acompanhamento,descricao)
 		(SELECT @DATACARGA,idTipoAcompanhamento,TipoAcompanhamento,descricao FROM TipoAcompanhamento WHERE (data_atualizacao >= @DATACARGA))
+	
 	END
 
 
@@ -351,33 +347,33 @@ AS
 		DECLARE @QTDCANDIDATOS INT
 
 		DECLARE servico CURSOR FOR 
-		SELECT codigo, data_solicitacao, id_acompanhante, 
-			   id_cliente, id_tipo_acompanhamento,valor_total,status FROM TB_AUX_SERVICO
+		SELECT codigo,id_cliente,id_acompanhante,id_oportunidade,valor_total,status 
+		FROM TB_AUX_SERVICO
 			   
 		DELETE TB_AUX_FATO_ACOMPANHAMENTO WHERE @DATACARGA = data_carga
 
 		OPEN servico
-		FETCH servico INTO @CODIGO,@DATASOLICITACAO,@IDACOMPANHANTE,@IDCLIENTE,@IDTIPOACOMPANHAMENTO,@VALOR,@STATUS
+		FETCH servico INTO @CODIGO,@IDCLIENTE,@IDACOMPANHANTE,@IDOPORTUNIDADE,@VALOR,@STATUS
 
 		WHILE(@@FETCH_STATUS = 0)
 			BEGIN
 				
 				SET @IDTEMPO			= (SELECT ID FROM DIM_TEMPO WHERE data = CAST(@DATACARGA AS DATE))
 				SET @IDLOCALIDADE		= (SELECT codigo FROM TB_AUX_LOCALIDADE WHERE id_servico = @CODIGO)
-				SET @IDOPORTUNIDADE		= (SELECT codigo FROM TB_AUX_OPORTUNIDADE WHERE id_servico = @CODIGO)
 				SET @IDTRANSACAO		= (SELECT codigo FROM TB_AUX_TRANSACAO WHERE id_servico = @CODIGO)
 				SET @IDADE				= (SELECT idade FROM TB_AUX_ACOMPANHANTE WHERE codigo = @IDACOMPANHANTE)
 				SET @IDFAIXAETARIAACOMPANHANTE = (SELECT id FROM DIM_FAIXA_ETARIA WHERE @IDADE >= idade_inicial AND @IDADE <= idade_final)
 				SET @IDADE					   = (SELECT idade FROM TB_AUX_CLIENTE WHERE codigo = @IDCLIENTE)
 				SET @IDFAIXAETARIACLEINTE	   = (SELECT id FROM DIM_FAIXA_ETARIA WHERE @IDADE >= idade_inicial AND @IDADE <= idade_final)
 				SET @IDTEMPOTRANSACAO		   = (SELECT id FROM DIM_TEMPO WHERE data = CAST((SELECT data_transacao FROM TB_AUX_TRANSACAO WHERE id_servico = @CODIGO) AS DATE))
-				SET @QTDCANDIDATOS			   = (SELECT qtd_candidatos FROM TB_AUX_OPORTUNIDADE WHERE id_servico = @CODIGO)
+				SET @QTDCANDIDATOS			   = (SELECT qtd_candidatos FROM TB_AUX_OPORTUNIDADE WHERE @IDOPORTUNIDADE = codigo)
 
 
 				INSERT INTO TB_AUX_FATO_ACOMPANHAMENTO (data_carga,id_tempo,id_cliente,id_acompanhante,id_localidade,id_oportunidade,id_servico,id_transacao,id_faixa_etaria_cliente,id_faixa_etaria_acompanhante,id_data_transacao,id_tipo_acompanhamento,qtd,valor,qtd_candidatos)
 				VALUES(@DATACARGA,@IDTEMPO,@IDCLIENTE,@IDACOMPANHANTE,@IDLOCALIDADE,@IDOPORTUNIDADE,@CODIGO,@IDTRANSACAO,@IDFAIXAETARIACLEINTE,@IDFAIXAETARIAACOMPANHANTE,@IDTEMPOTRANSACAO,@IDTIPOACOMPANHAMENTO,1,@VALOR,@QTDCANDIDATOS)
 
-				FETCH servico INTO @CODIGO,@DATASOLICITACAO,@IDACOMPANHANTE,@IDCLIENTE,@IDTIPOACOMPANHAMENTO,@VALOR,@STATUS
+
+				FETCH servico INTO @CODIGO,@IDCLIENTE,@IDACOMPANHANTE,@IDOPORTUNIDADE,@VALOR,@STATUS
 			END
 			CLOSE servico
 			DEALLOCATE servico

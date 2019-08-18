@@ -65,7 +65,6 @@ CREATE TABLE DIM_OPORTUNIDADE (
                                   descricao VARCHAR(300) NOT NULL,
                                   status VARCHAR(45) NOT NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'CANCELADA')),
                                   eh_publica SMALLINT NOT NULL CHECK(eh_publica IN (1,0)),
-                                  id_acompanhante INT NOT NULL,
                                   dt_inicio DATE NOT NULL,
                                   dt_fim DATE NULL,
                                   fl_corrente CHAR(3) NOT NULL CHECK(fl_corrente IN ('SIM','NAO'))

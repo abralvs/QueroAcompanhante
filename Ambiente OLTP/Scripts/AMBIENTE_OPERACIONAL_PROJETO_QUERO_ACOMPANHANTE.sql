@@ -57,7 +57,7 @@ CREATE TABLE Oportunidade (
    idCliente INT NOT NULL,
    idAcompanhante INT NULL, 
    idAcompanhnatePreferido INT NULL,
-   status VARCHAR(45) NULL CHECK(status IN ('ABERTA','OCUPADA','CANCELADA')),
+   status VARCHAR(45) NULL CHECK(status IN ('ABERTA','OCUPADA','FINALIZADA')),
    EhPublica SMALLINT NOT NULL,
    data_atualizacao DATETIME NOT NULL,
    PRIMARY KEY(idOportunidade),
