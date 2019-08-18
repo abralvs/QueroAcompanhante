@@ -195,6 +195,8 @@ BEGIN
     EXEC SP_POVOA_DIM_SERVICO                @DATA;
     EXEC SP_POVOA_DIM_TIPO_ACOMPANHAMETO     @DATA;
 END
+
+
 -- -----------------------------------------------------
 -- PROCEDURE DIM_TEMPO
 -- -----------------------------------------------------

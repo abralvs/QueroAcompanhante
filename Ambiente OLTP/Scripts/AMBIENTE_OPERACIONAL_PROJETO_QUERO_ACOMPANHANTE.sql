@@ -57,7 +57,7 @@ CREATE TABLE Oportunidade (
    idCliente INT NOT NULL,
    idAcompanhante INT NULL, 
    idAcompanhnatePreferido INT NULL,
-   status VARCHAR(45) NULL CHECK(status IN ('ABERTA','OCUPADA','FINALIZADA')),
+   status VARCHAR(45) NULL CHECK(status IN ('ABERTA','OCUPADA','FECHADA')),
    EhPublica SMALLINT NOT NULL,
    data_atualizacao DATETIME NOT NULL,
    PRIMARY KEY(idOportunidade),
@@ -70,7 +70,7 @@ CREATE TABLE Servico (
    idOportunidade INT NOT NULL,
    idCliente INT NOT NULL,
    idAcompanhante INT NOT NULL,	
-   status VARCHAR(45) NOT NULL CHECK(status IN ('EM ANDAMENTO', 'CANCELADA', 'FINALIZADA')),
+   status VARCHAR(45) NOT NULL CHECK(status IN ('EM ANDAMENTO', 'CANCELADA', 'CONCLUIDA')),
    data_atualizacao DATETIME NOT NULL,
    PRIMARY KEY(idServico),
    FOREIGN KEY (idOportunidade) REFERENCES Oportunidade(idOportunidade)
@@ -132,10 +132,6 @@ CREATE TABLE Transacao(
 EXEC SP_INSERE_USUARIOS 
 EXEC SP_INSERE_SOLICITACOES_SERVICO 
 EXEC SP_INSERIR_NEGOCIACAO 
-
-DROP PROCEDURE SP_INSERE_USUARIOS
-DROP PROCEDURE SP_INSERE_SOLICITACOES_SERVICO
-DROP PROCEDURE SP_INSERIR_NEGOCIACAO
 
 GO
 
@@ -274,8 +270,8 @@ AS
 
 
 		/*finalizando encontros*/
-		UPDATE Servico SET status = 'FINALIZADA', data_atualizacao = GETDATE() WHERE idServico = 1;
-		UPDATE Servico SET status = 'FINALIZADA', data_atualizacao = GETDATE() WHERE idServico = 3;
+		UPDATE Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 1;
+		UPDATE Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 3;
 	
 	END
 	
