@@ -5,7 +5,6 @@
  * PROJETAR AMBIENTE DE SUPORTE A DECISÃO BASEADO EM SISTEMA DE ACOMPANHANTES
  * ABRAÃO ALVES E IGOR BRUNO
  **/
-USE LAB1;
 DROP DATABASE QueroAcompanhanteSAD;
 CREATE DATABASE QueroAcompanhanteSAD;
 USE QueroAcompanhanteSAD;
@@ -107,7 +106,6 @@ CREATE TABLE DIM_TRANSACAO (
                                codigo_transacao INT NOT NULL,
                                pagamento_avista SMALLINT CHECK(pagamento_avista IN (1,0))
 )
-
 -- -----------------------------------------------------
 -- Table DIM_FAIXA_ETARIA
 -- -----------------------------------------------------

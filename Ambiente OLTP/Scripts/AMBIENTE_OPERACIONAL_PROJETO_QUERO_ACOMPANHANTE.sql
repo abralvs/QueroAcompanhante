@@ -2,6 +2,7 @@ CREATE DATABASE QueroAcompanhanteSAD
 DROP DATABASE QueroAcompanhanteSAD
 USE QueroAcompanhanteSAD
 
+
 /*---------------------------------------- CRIANDO TABELAS DO BANCO  -----------------------------------------------------*/
 
 CREATE TABLE Usuario(
