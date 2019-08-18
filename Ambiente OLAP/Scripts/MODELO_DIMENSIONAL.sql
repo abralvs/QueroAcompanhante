@@ -62,7 +62,7 @@ CREATE TABLE DIM_OPORTUNIDADE (
                                   codigo_oportunidade INT NOT NULL,
                                   titulo VARCHAR(50) NOT NULL,
                                   descricao VARCHAR(300) NOT NULL,
-                                  status VARCHAR(45) NOT NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'CANCELADA')),
+                                  status VARCHAR(45) NOT NULL CHECK (status IN ('ABERTA', 'OCUPADA', 'FECHADA')),
                                   eh_publica SMALLINT NOT NULL CHECK(eh_publica IN (1,0)),
 								  qtd_candidatos INT NOT NULL, -- adicionei esse campo aqui e retirei ele do fato
                                   dt_inicio DATE NOT NULL,
@@ -93,7 +93,7 @@ CREATE TABLE DIM_ACOMPANHANTE (
 CREATE TABLE DIM_SERVICO (
                              id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
                              codigo_servico INT NOT NULL,
-                             status VARCHAR(45) NOT NULL CHECK (status IN('PENDENTE', 'ACEITA', 'RECUSADA', 'CANCELADA', 'FINALIZADA')),
+                             status VARCHAR(45) NOT NULL CHECK (status IN('EM ANDAMENTO', 'CANCELADA', 'CONCLUIDA')),
                              dt_inicio DATE NOT NULL,
                              dt_fim DATE NULL,
                              fl_corrente CHAR(3) NOT NULL CHECK(fl_corrente IN ('SIM','NAO'))
@@ -104,8 +104,7 @@ CREATE TABLE DIM_SERVICO (
 -- -----------------------------------------------------
 CREATE TABLE DIM_TRANSACAO (
                                id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-                               codigo_transacao INT NOT NULL,
-                               pagamento_avista SMALLINT CHECK(pagamento_avista IN (1,0))
+                               tipo_pagamento VARCHAR(50) CHECK(tipo_pagamento IN ('EM ESPECIE','CARTAO CREDITO/DEBITO','NAO REALIZADO'))
 )
 -- -----------------------------------------------------
 -- Table DIM_FAIXA_ETARIA
@@ -143,7 +142,6 @@ CREATE TABLE FATO_ACOMPANHAMENTO (
                                      id_faixa_etaria_cliente INT NOT NULL,
                                      id_faixa_etaria_acompanhante INT NOT NULL,
                                      id_tipo_acompanhamento INT NOT NULL,
-                                     id_data_transacao INT NULL,
                                      qtd INT NOT NULL,
                                      valor DECIMAL(10,0) NOT NULL,
                                      CONSTRAINT FK_DIM_TEMPO FOREIGN KEY(id_tempo) REFERENCES DIM_TEMPO(id),
@@ -155,7 +153,6 @@ CREATE TABLE FATO_ACOMPANHAMENTO (
                                      CONSTRAINT Fk_DIM_TRANSACAO FOREIGN KEY(id_transacao) REFERENCES DIM_TRANSACAO(id),
                                      CONSTRAINT Fk_DIM_FAIXA_ETARIA_CLIENTE FOREIGN KEY (id_faixa_etaria_cliente) REFERENCES DIM_FAIXA_ETARIA(id),
                                      CONSTRAINT Fk_DIM_FAIXA_ETARIA_ACOMPANHANTE FOREIGN KEY (id_faixa_etaria_acompanhante) REFERENCES DIM_FAIXA_ETARIA(id),
-                                     CONSTRAINT Fk_DIM_TEMPO_DATA_TRANSACAO FOREIGN KEY (id_data_transacao) REFERENCES DIM_TEMPO(id),
                                      CONSTRAINT Fk_DIM_TIPO_ACOMPANHAMENTO FOREIGN KEY (id_tipo_acompanhamento) REFERENCES DIM_TIPO_ACOMPANHAMENTO(id)
 )
 
@@ -172,12 +169,22 @@ CREATE TABLE FATO_OPORTUNIDADE_SEMESTRE(
 -- -----------------------------------------------------
 -- EXECUTA PROCEDURES
 -- -----------------------------------------------------
-EXEC SP_POVOA_DIM_TEMPO              '20180101', '20300101';
-EXEC SP_POVOA_DIMS                   '20190721';
-EXEC SP_POVOA_FATO_ACOMPANHAMENTO    '20190721';
+EXEC SP_POVOA_DIMS_PRE_CARREGADAS  '20180101', '20300101';
+EXEC SP_POVOA_DIMS							   '20190721';
+EXEC SP_POVOA_FATO_ACOMPANHAMENTO			   '20190721';
+
 -- -----------------------------------------------------
 -- PROCEDURE CARGA_DIMENSOES
 -- -----------------------------------------------------
+CREATE PROCEDURE SP_POVOA_DIMS_PRE_CARREGADAS(@DT_INICIO_DIM_TEMPO DATETIME,@DT_FIM_DIM_TEMPO DATETIME)
+AS
+BEGIN
+	EXEC SP_POVOA_DIM_TEMPO         @DT_INICIO_DIM_TEMPO,@DT_FIM_DIM_TEMPO;
+	EXEC SP_POVOA_DIM_FAIXA_ETARIA;
+	EXEC SP_POVOA_DIM_TRANSACAO;
+END
+GO
+
 CREATE PROCEDURE SP_POVOA_DIMS(@DATA DATE)
 AS
 BEGIN
@@ -187,11 +194,8 @@ BEGIN
     EXEC SP_POVOA_DIM_OPORTUNIDADE           @DATA;
     EXEC SP_POVOA_DIM_SERVICO                @DATA;
     EXEC SP_POVOA_DIM_TIPO_ACOMPANHAMETO     @DATA;
-    EXEC SP_POVOA_DIM_TRANSACAO              @DATA;
-    EXEC SP_POVOA_DIM_FAIXA_ETARIA                ;
 END
-
-    -- -----------------------------------------------------
+-- -----------------------------------------------------
 -- PROCEDURE DIM_TEMPO
 -- -----------------------------------------------------
     CREATE PROCEDURE SP_POVOA_DIM_TEMPO(@INICIO DATE, @FIM DATE)
@@ -300,7 +304,6 @@ GO
 -- -----------------------------------------------------
 -- PROCEDURE DIM_LOCALIDADE
 -- -----------------------------------------------------
-
 CREATE PROCEDURE SP_POVOA_DIM_LOCALIDADE(@DATA_CARGA DATE)
 AS
 BEGIN
@@ -469,33 +472,11 @@ GO
 -- -----------------------------------------------------
 -- PROCEDURE DIM_TRANSACAO
 -- -----------------------------------------------------
-CREATE PROCEDURE SP_POVOA_DIM_TRANSACAO(@DATA_CARGA DATE)
+CREATE PROCEDURE SP_POVOA_DIM_TRANSACAO
 AS
 BEGIN
-    DECLARE @CODIGO_TRANSACAO INT, @ID_SERVICO INT, @PAGAMENTO_AVISTA SMALLINT, @DATA_TRANSACAO DATE;
-    DECLARE CURSOR_T CURSOR FOR SELECT CODIGO,
-                                       ID_SERVICO,
-                                       PAGAMENTO_AVISTA,
-                                       DATA_TRANSACAO
-                                FROM TB_AUX_TRANSACAO
-                                WHERE DATA_CARGA = @DATA_CARGA;
-    OPEN CURSOR_T;
-    FETCH CURSOR_T INTO @CODIGO_TRANSACAO, @ID_SERVICO, @PAGAMENTO_AVISTA, @DATA_TRANSACAO;
-
-    WHILE (@@FETCH_STATUS = 0)
-    BEGIN
-        IF (@CODIGO_TRANSACAO IS NULL OR @ID_SERVICO IS NULL OR @DATA_TRANSACAO IS NULL OR @PAGAMENTO_AVISTA IS NULL)
-            INSERT INTO TB_VIO_TRANSACAO(DATA_CARGA, CODIGO, ID_SERVICO, PAGAMENTO_AVISTA, DATA_TRANSACAO,
-                                         DATA_VIOLACAO, VIOLACAO)
-            VALUES (@DATA_CARGA, @CODIGO_TRANSACAO, @ID_SERVICO, @PAGAMENTO_AVISTA, @DATA_TRANSACAO, GETDATE(),
-                    'VIOLAÇÃO COM ATRIBUTO QUE É NULO');
-        ELSE
-            INSERT INTO DIM_TRANSACAO(CODIGO_TRANSACAO,PAGAMENTO_AVISTA) VALUES (@CODIGO_TRANSACAO, @PAGAMENTO_AVISTA);
-
-        FETCH CURSOR_T INTO @CODIGO_TRANSACAO, @ID_SERVICO, @PAGAMENTO_AVISTA, @DATA_TRANSACAO;
-    END
-    CLOSE CURSOR_T;
-    DEALLOCATE CURSOR_T;
+   INSERT INTO DIM_TRANSACAO (TIPO_PAGAMENTO)
+   VALUES('EM ESPECIE'),('CARTAO CREDITO/DEBITO'),('NAO REALIZADO') 
 END
 GO
 
@@ -560,23 +541,23 @@ BEGIN
     --VAR CODIGOS STAGING
     DECLARE
         @CODIGO_ACOMPANHANTE INT, @CODIGO_CLIENTE INT, @CODIGO_SERVICO INT, @CODIGO_TIPO_ACOMP INT, @CODIGO_OPORTUNIDADE INT,
-        @CODIGO_LOCALIDADE   INT, @CODIGO_TRANSACAO INT, @CODIGO_FAIXA_ETARIA_ACOMP INT, @CODIGO_FAIXA_ETARIA_CLIENTE INT,  @CODIGO_DATA_TRANSACAO INT;
+        @CODIGO_LOCALIDADE  INT, @CODIGO_FAIXA_ETARIA_ACOMP INT, @CODIGO_FAIXA_ETARIA_CLIENTE INT,  @CODIGO_DATA_TRANSACAO INT;
 
     --VAR ID'S DIM
     DECLARE
         @ID_ACOMPANHANTE INT, @ID_CLIENTE INT, @ID_SERVICO INT, @ID_TIPO_ACOMP INT, @ID_TEMPO INT,
         @ID_LOCALIDADE   INT, @ID_OPORTUNIDADE INT, @ID_TRANSACAO INT, @ID_FAIXA_ETARIA_ACOMP INT, @ID_FAIXA_ETARIA_CLIENTE INT, @IDADE_ACOMP INT,
-        @IDADE_CLIENTE   INT, @ID_DATA_TRANSACAO INT, @VALOR NUMERIC(10, 2), @QTD SMALLINT;
+        @IDADE_CLIENTE   INT, @VALOR NUMERIC(10, 2), @QTD SMALLINT;
 
     DECLARE CURSOR_F CURSOR FOR SELECT ID_TEMPO, ID_CLIENTE, ID_ACOMPANHANTE, ID_LOCALIDADE, ID_OPORTUNIDADE, ID_SERVICO,
                                        ID_TRANSACAO, ID_FAIXA_ETARIA_CLIENTE,
-                                       ID_FAIXA_ETARIA_ACOMPANHANTE, ID_DATA_TRANSACAO, ID_TIPO_ACOMPANHAMENTO, QTD, VALOR
+                                       ID_FAIXA_ETARIA_ACOMPANHANTE, ID_TIPO_ACOMPANHAMENTO, QTD, VALOR
                                 FROM TB_AUX_FATO_ACOMPANHAMENTO
                                 WHERE DATA_CARGA = @DATA_CARGA;
 
     OPEN CURSOR_F;
-    FETCH CURSOR_F INTO @ID_TEMPO, @CODIGO_CLIENTE, @CODIGO_ACOMPANHANTE, @CODIGO_LOCALIDADE, @CODIGO_OPORTUNIDADE, @CODIGO_SERVICO, @CODIGO_TRANSACAO,
-        @CODIGO_FAIXA_ETARIA_CLIENTE, @CODIGO_FAIXA_ETARIA_ACOMP, @CODIGO_DATA_TRANSACAO, @CODIGO_TIPO_ACOMP, @QTD, @VALOR;
+    FETCH CURSOR_F INTO @ID_TEMPO, @CODIGO_CLIENTE, @CODIGO_ACOMPANHANTE, @CODIGO_LOCALIDADE, @CODIGO_OPORTUNIDADE, @CODIGO_SERVICO, @ID_TRANSACAO,
+        @CODIGO_FAIXA_ETARIA_CLIENTE, @CODIGO_FAIXA_ETARIA_ACOMP, @CODIGO_TIPO_ACOMP, @QTD, @VALOR;
 
     WHILE (@@FETCH_STATUS = 0)
     BEGIN
@@ -592,36 +573,32 @@ BEGIN
         SET @ID_SERVICO =
                 (SELECT ID FROM DIM_SERVICO WHERE CODIGO_SERVICO = @CODIGO_SERVICO
                                               AND FL_CORRENTE = 'SIM');
-        SET @ID_TRANSACAO =
-                (SELECT ID FROM DIM_TRANSACAO WHERE CODIGO_TRANSACAO = @CODIGO_TRANSACAO);
         SET @IDADE_ACOMP =
                 (SELECT IDADE FROM DIM_ACOMPANHANTE WHERE CODIGO_ACOMPANHANTE = @CODIGO_ACOMPANHANTE);
         SET @ID_FAIXA_ETARIA_ACOMP = (SELECT ID
                                       FROM DIM_FAIXA_ETARIA
                                       WHERE @IDADE_ACOMP >= IDADE_INICIAL
-                                        AND @IDADE_CLIENTE <= IDADE_FINAL);
+                                        AND @IDADE_ACOMP <= IDADE_FINAL);
         SET @IDADE_CLIENTE =
                 (SELECT IDADE FROM DIM_CLIENTE WHERE CODIGO_CLIENTE = @CODIGO_CLIENTE);
         SET @ID_FAIXA_ETARIA_CLIENTE = (SELECT ID
                                         FROM DIM_FAIXA_ETARIA
                                         WHERE @IDADE_CLIENTE >= IDADE_INICIAL
                                           AND @IDADE_CLIENTE <= IDADE_FINAL);
-        SET @ID_DATA_TRANSACAO =
-                (SELECT ID FROM DIM_TEMPO WHERE DATA = CAST((SELECT DATA FROM DIM_TEMPO WHERE ID = @CODIGO_DATA_TRANSACAO) AS DATE));
         SET @ID_TIPO_ACOMP =
                 (SELECT ID FROM DIM_TIPO_ACOMPANHAMENTO WHERE CODIGO_TIPO_ACOMPANHANTE = @CODIGO_TIPO_ACOMP);     
 
         IF (@ID_TEMPO IS NULL OR @ID_CLIENTE IS NULL OR @ID_ACOMPANHANTE IS NULL OR @ID_LOCALIDADE IS NULL
             OR @ID_OPORTUNIDADE IS NULL OR @ID_SERVICO IS NULL OR @ID_TRANSACAO IS NULL
-            OR @ID_FAIXA_ETARIA_CLIENTE IS NULL OR @ID_FAIXA_ETARIA_ACOMP IS  NULL
-            OR @ID_DATA_TRANSACAO IS NULL OR @ID_TIPO_ACOMP IS NULL)
+            OR @ID_TRANSACAO IS NULL OR @ID_FAIXA_ETARIA_CLIENTE IS NULL OR @ID_FAIXA_ETARIA_ACOMP IS  NULL
+            OR @ID_TIPO_ACOMP IS NULL)
             INSERT INTO TB_VIO_FATO_ACOMPANHAMENTO(data_carga, id_tempo, id_cliente, id_acompanhante, id_localidade, id_oportunidade,
                                                    id_servico, id_transacao, id_faixa_etaria_cliente, id_faixa_etaria_acompanhante,
-                                                   id_data_transacao, id_tipo_acompanhamento, qtd, valor, data_violacao, violacao)
+                                                   id_tipo_acompanhamento, qtd, valor, data_violacao, violacao)
             VALUES (@DATA_CARGA, @ID_TEMPO, @ID_CLIENTE, @ID_ACOMPANHANTE,
                     @ID_LOCALIDADE, @ID_OPORTUNIDADE, @ID_SERVICO, @ID_TRANSACAO,
                     @ID_FAIXA_ETARIA_CLIENTE,
-                    @ID_FAIXA_ETARIA_ACOMP, @ID_DATA_TRANSACAO, @ID_TIPO_ACOMP, @QTD,
+                    @ID_FAIXA_ETARIA_ACOMP, @ID_TIPO_ACOMP, @QTD,
                     @VALOR, GETDATE(),
                     'HOUVE UM PROBLEMA NOS ID DOS DADOS DE ALGUMA(S) DIM');
         ELSE
@@ -629,15 +606,14 @@ BEGIN
                                             ID_LOCALIDADE, ID_OPORTUNIDADE, ID_SERVICO,
                                             ID_TRANSACAO, ID_FAIXA_ETARIA_CLIENTE,
                                             ID_FAIXA_ETARIA_ACOMPANHANTE,
-                                            ID_TIPO_ACOMPANHAMENTO, ID_DATA_TRANSACAO,
-                                            QTD, VALOR)
+                                            ID_TIPO_ACOMPANHAMENTO, QTD, VALOR)
             VALUES (@ID_TEMPO, @ID_CLIENTE, @ID_ACOMPANHANTE, @ID_LOCALIDADE,
                     @ID_OPORTUNIDADE, @ID_SERVICO, @ID_TRANSACAO,
                     @ID_FAIXA_ETARIA_CLIENTE,
-                    @ID_FAIXA_ETARIA_ACOMP, @ID_DATA_TRANSACAO, @ID_TIPO_ACOMP, @QTD,
+                    @ID_FAIXA_ETARIA_ACOMP, @ID_TIPO_ACOMP, @QTD,
                     @VALOR);
-        FETCH CURSOR_F INTO @ID_TEMPO, @CODIGO_CLIENTE, @CODIGO_ACOMPANHANTE, @CODIGO_LOCALIDADE, @CODIGO_OPORTUNIDADE, @CODIGO_SERVICO, @CODIGO_TRANSACAO,
-            @CODIGO_FAIXA_ETARIA_CLIENTE, @CODIGO_FAIXA_ETARIA_ACOMP, @CODIGO_DATA_TRANSACAO, @CODIGO_TIPO_ACOMP, @QTD, @VALOR;
+        FETCH CURSOR_F INTO @ID_TEMPO, @CODIGO_CLIENTE, @CODIGO_ACOMPANHANTE, @CODIGO_LOCALIDADE, @CODIGO_OPORTUNIDADE, @CODIGO_SERVICO, @ID_TRANSACAO,
+            @CODIGO_FAIXA_ETARIA_CLIENTE, @CODIGO_FAIXA_ETARIA_ACOMP,  @CODIGO_TIPO_ACOMP, @QTD, @VALOR;
     END
     CLOSE CURSOR_F;
     DEALLOCATE CURSOR_F;

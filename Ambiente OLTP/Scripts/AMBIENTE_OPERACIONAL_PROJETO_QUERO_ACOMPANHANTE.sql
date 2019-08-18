@@ -2,7 +2,6 @@ CREATE DATABASE QueroAcompanhanteSAD
 DROP DATABASE QueroAcompanhanteSAD
 USE QueroAcompanhanteSAD
 
-
 /*---------------------------------------- CRIANDO TABELAS DO BANCO  -----------------------------------------------------*/
 
 CREATE TABLE Usuario(
@@ -121,29 +120,18 @@ CREATE TABLE Candidatura(
 CREATE TABLE Transacao(
 	idTransacao INT IDENTITY(1,1) NOT NULL,
 	idServico INT NOT NULL,
-	dataEHora DATETIME NOT NULL,
-	pagamento_avista SMALLINT NOT NULL DEFAULT 1,
+	dataTransacao DATETIME NOT NULL,
+	tipoPagamento VARCHAR(50) CHECK(tipoPagamento IN (('EM ESPECIE'),('CARTAO CREDITO/DEBITO'))),
 	data_atualizacao DATETIME NOT NULL,
 	PRIMARY KEY (idTransacao),
 	FOREIGN KEY (idServico) REFERENCES Servico(idServico)
 )
 
-SELECT * FROM endereco
-SELECT * FROM Usuario
-SELECT * FROM Acompanhante
-SELECT * FROM TipoAcompanhamento
-SELECT * FROM Servico
-SELECT * FROM Mensagem
-SELECT * FROM Oportunidade
-SELECT * FROM DetalhesEncontro
-SELECT * FROM Candidatura
-SELECT * FROM Transacao
-
 /*---------------------------------------- PROCEDIMENTOS ARMAZENADOS PARA POPULAR O BANCO-----------------------------------------------------*/
 
-EXEC SP_INSERE_USUARIOS
-EXEC SP_INSERE_SOLICITACOES_SERVICO
-EXEC SP_INSERIR_NEGOCIACAO
+EXEC SP_INSERE_USUARIOS 
+EXEC SP_INSERE_SOLICITACOES_SERVICO 
+EXEC SP_INSERIR_NEGOCIACAO 
 
 DROP PROCEDURE SP_INSERE_USUARIOS
 DROP PROCEDURE SP_INSERE_SOLICITACOES_SERVICO
@@ -280,9 +268,9 @@ AS
 
 		
 		/*-----------------------------------------------------------------------------------------------------------------------------------*/
-		INSERT INTO Transacao (idServico,dataEHora,pagamento_avista,data_atualizacao)
-		VALUES(1,'20190725',0,GETDATE()),
-			  (3,'20190822',1,GETDATE())
+		INSERT INTO Transacao (idServico,dataTransacao,tipoPagamento,data_atualizacao)
+		VALUES(1,'20190725','CARTAO CREDITO/DEBITO',GETDATE()),
+			  (3,'20190822','EM ESPECIE',GETDATE())
 
 
 		/*finalizando encontros*/
@@ -290,5 +278,4 @@ AS
 		UPDATE Servico SET status = 'FINALIZADA', data_atualizacao = GETDATE() WHERE idServico = 3;
 	
 	END
-
-
+	
