@@ -5,9 +5,8 @@
  * PROJETAR AMBIENTE DE SUPORTE A DECISÃO BASEADO EM SISTEMA DE ACOMPANHANTES
  * ABRAÃO ALVES E IGOR BRUNO
  **/
-DROP DATABASE QueroAcompanhanteSAD;
-CREATE DATABASE QueroAcompanhanteSAD;
-USE QueroAcompanhanteSAD;
+
+
 CREATE SCHEMA AMBIENTE_DIMENSIONAL;
 
 -- -----------------------------------------------------

@@ -1,6 +1,3 @@
-CREATE DATABASE QueroAcompanhanteSAD
-DROP DATABASE QueroAcompanhanteSAD
-USE QueroAcompanhanteSAD
 CREATE SCHEMA AMBIENTE_OLTP;
 
 												--- -----------------------------------------
@@ -135,13 +132,16 @@ CREATE TABLE AMBIENTE_OLTP.Transacao(
 									--				PROCEDIMENTOS ARMAZENADOS PARA POPULAR O BANCO			--
 									--- ----------------------------------------------------------------------
 
-EXEC AMBIENTE_OLTP.SP_INSERE_USUARIOS
-EXEC AMBIENTE_OLTP.SP_INSERE_SOLICITACOES_SERVICO
-EXEC AMBIENTE_OLTP.SP_INSERIR_NEGOCIACAO
 
---- ----------------------------------------------------------------------
+--- -------------------------------------
+-- POPULANDO O BANCO
+--- -------------------------------------
+EXEC AMBIENTE_OLTP.SP_POVOA_AMBIENTE_OLTP
+
+
+--- -------------------------------------
 -- INSERINDO CLIENTES E ACOMPANHANTES  
---- ----------------------------------------------------------------------
+--- -------------------------------------
 CREATE PROCEDURE AMBIENTE_OLTP.SP_INSERE_USUARIOS 
 AS
 	BEGIN
@@ -283,4 +283,16 @@ AS
 		UPDATE AMBIENTE_OLTP.Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 3;
 	
 	END
-	
+
+GO
+
+--- ---------------------------------------------------------------------------
+-- EXECUTANDO PROCEDIMENTOS PARA POPULAR O BANCO
+--- ---------------------------------------------------------------------------
+CREATE PROCEDURE AMBIENTE_OLTP.SP_POVOA_AMBIENTE_OLTP 
+AS
+BEGIN
+	EXEC AMBIENTE_OLTP.SP_INSERE_USUARIOS
+	EXEC AMBIENTE_OLTP.SP_INSERE_SOLICITACOES_SERVICO
+	EXEC AMBIENTE_OLTP.SP_INSERIR_NEGOCIACAO
+END

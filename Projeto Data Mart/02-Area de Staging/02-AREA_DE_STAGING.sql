@@ -6,7 +6,6 @@
  * ABRA?O ALVES E IGOR BRUNO
  * 25/07/2019
  **/
- USE QueroAcompanhanteSAD
  CREATE SCHEMA AMBIENTE_OLAP;
 /*--------------------------- CRIANDO TABELAS AUXILIARES DA AREA DE STAGING ---------------------------*/
 
