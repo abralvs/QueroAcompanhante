@@ -4,10 +4,10 @@ USE QUEROACOMPANHANTE_SAD;
 -- -----------------------------------------------------
 EXEC AMBIENTE_DIMENSIONAL.SP_POVOA_DIMS							   '20190721';
 EXEC AMBIENTE_DIMENSIONAL.SP_POVOA_FATO_ACOMPANHAMENTO			   '20190721';
-EXEC AMBIENTE_DIMENSIONAL.SP_POVOA_FATO_OPORTUNIDADE_CONCLUIDA              ;
+EXEC AMBIENTE_DIMENSIONAL.SP_POVOA_FATO_ACOMPANHAMENTO_CONCLUIDO           ;
 
 SELECT * FROM AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO
-SELECT * FROM AMBIENTE_DIMENSIONAL.FATO_OPORTUNIDADE_CONCLUIDA
+SELECT * FROM AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO_CONCLUIDO
 
 -- -----------------------------------------------------
 -- PROCEDURE AMBIENTE_DIMENSIONAL.DIM_OPORTUNIDADE
@@ -89,7 +89,7 @@ BEGIN
     BEGIN
         IF (@ESTADO IS NULL OR @CIDADE IS NULL OR @RUA IS NULL OR @BAIRRO IS NULL)
             INSERT INTO AMBIENTE_OLAP.TB_VIO_LOCALIDADE(DATA_CARGA, CODIGO, ID_USUARIO, ESTADO, CIDADE, RUA, BAIRRO, DATA_VIOLACAO,
-                                          VIOLACAO)
+                                                        VIOLACAO)
             VALUES (@DATA_CARGA, @CODIGO_LOCALIDADE, @ID_SERVICO, @ESTADO, @CIDADE, @RUA, @BAIRRO, GETDATE(),
                     'VIOLA��O COM ATRIBUTO QUE � NULO');
         ELSE
@@ -130,7 +130,7 @@ BEGIN
         IF (@NOME IS NULL OR @CPF IS NULL OR @TELEFONE IS NULL OR @GENERO IS NULL OR @USUARIO IS NULL
             OR @IDADE IS NULL OR @DT_NASC IS NULL)
             INSERT INTO AMBIENTE_OLAP.TB_VIO_CLIENTE(DATA_CARGA, CODIGO, NOME, CPF, TELEFONE, GENERO, USUARIO, DATA_NASCIMENTO,
-                                       IDADE, DATA_VIOLACAO, VIOLACAO)
+                                                     IDADE, DATA_VIOLACAO, VIOLACAO)
             VALUES (@DATA_CARGA, @CODIGO_CLIENTE, @NOME, @CPF, @TELEFONE, @GENERO, @USUARIO, @DT_NASC, @IDADE, GETDATE(),
                     'VIOLA��O COM ATRIBUTO QUE � NULO');
         ELSE
@@ -172,7 +172,7 @@ BEGIN
         IF (@NOME IS NULL OR @CPF IS NULL OR @TELEFONE IS NULL OR @GENERO IS NULL OR @USUARIO IS NULL
             OR @IDADE IS NULL OR @DT_NASC IS NULL OR @VALOR_HORA IS NULL)
             INSERT INTO AMBIENTE_OLAP.TB_VIO_ACOMPANHANTE(DATA_CARGA, CODIGO, NOME, CPF, TELEFONE, GENERO, USUARIO,
-                                            DATA_NASCIMENTO, IDADE, VALOR_HORA, DATA_VIOLACAO, VIOLACAO)
+                                                          DATA_NASCIMENTO, IDADE, VALOR_HORA, DATA_VIOLACAO, VIOLACAO)
             VALUES (@DATA_CARGA, @CODIGO, @NOME, @CPF, @TELEFONE, @GENERO, @USUARIO, @DT_NASC, @IDADE,
                     @VALOR_HORA, GETDATE(), 'VIOLA��O COM ATRIBUTO QUE � NULO');
         ELSE
@@ -253,8 +253,8 @@ BEGIN
     BEGIN
         IF (@CODIGO IS NULL OR @DESCRICAO IS NULL OR @TIPO_ACOMP IS NULL)
             INSERT INTO AMBIENTE_OLAP.TB_VIO_TIPO_ACOMPANHAMENTO(DATA_CARGA, CODIGO, DESCRICAO,
-                                                   TIPO_ACOMPANHAMENTO, DATA_VIOLACAO,
-                                                   VIOLACAO)
+                                                                 TIPO_ACOMPANHAMENTO, DATA_VIOLACAO,
+                                                                 VIOLACAO)
             VALUES (@DATA_CARGA, @CODIGO, @DESCRICAO, @TIPO_ACOMP, GETDATE(),
                     'VIOLA��O COM ATRIBUTO QUE � NULO');
         ELSE
@@ -305,10 +305,10 @@ BEGIN
                 (SELECT ID FROM AMBIENTE_DIMENSIONAL.DIM_LOCALIDADE WHERE CODIGO_LOCALIDADE = @CODIGO_LOCALIDADE);
         SET @ID_OPORTUNIDADE =
                 (SELECT ID FROM AMBIENTE_DIMENSIONAL.DIM_OPORTUNIDADE WHERE CODIGO_OPORTUNIDADE = @CODIGO_OPORTUNIDADE
-                                                   AND FL_CORRENTE = 'SIM');
+                                                                        AND FL_CORRENTE = 'SIM');
         SET @ID_SERVICO =
                 (SELECT ID FROM AMBIENTE_DIMENSIONAL.DIM_SERVICO WHERE CODIGO_SERVICO = @CODIGO_SERVICO
-                                              AND FL_CORRENTE = 'SIM');
+                                                                   AND FL_CORRENTE = 'SIM');
         SET @IDADE_ACOMP =
                 (SELECT IDADE FROM AMBIENTE_DIMENSIONAL.DIM_ACOMPANHANTE WHERE CODIGO_ACOMPANHANTE = @CODIGO_ACOMPANHANTE);
         SET @ID_FAIXA_ETARIA_ACOMP = (SELECT ID
@@ -329,8 +329,8 @@ BEGIN
             OR @ID_TRANSACAO IS NULL OR @ID_FAIXA_ETARIA_CLIENTE IS NULL OR @ID_FAIXA_ETARIA_ACOMP IS  NULL
             OR @ID_TIPO_ACOMP IS NULL)
             INSERT INTO AMBIENTE_OLAP.TB_VIO_FATO_ACOMPANHAMENTO(data_carga, id_tempo, id_cliente, id_acompanhante, id_localidade, id_oportunidade,
-                                                   id_servico, id_transacao, id_faixa_etaria_cliente, id_faixa_etaria_acompanhante,
-                                                   id_tipo_acompanhamento, qtd, valor, data_violacao, violacao)
+                                                                 id_servico, id_transacao, id_faixa_etaria_cliente, id_faixa_etaria_acompanhante,
+                                                                 id_tipo_acompanhamento, qtd, valor, data_violacao, violacao)
             VALUES (@DATA_CARGA, @ID_TEMPO, @ID_CLIENTE, @ID_ACOMPANHANTE,
                     @ID_LOCALIDADE, @ID_OPORTUNIDADE, @ID_SERVICO, @ID_TRANSACAO,
                     @ID_FAIXA_ETARIA_CLIENTE,
@@ -339,10 +339,10 @@ BEGIN
                     'HOUVE UM PROBLEMA NOS ID DOS DADOS DE ALGUMA(S) DIM');
         ELSE
             INSERT INTO AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO(ID_TEMPO, ID_CLIENTE, ID_ACOMPANHANTE,
-                                            ID_LOCALIDADE, ID_OPORTUNIDADE, ID_SERVICO,
-                                            ID_TRANSACAO, ID_FAIXA_ETARIA_CLIENTE,
-                                            ID_FAIXA_ETARIA_ACOMPANHANTE,
-                                            ID_TIPO_ACOMPANHAMENTO, QTD, VALOR)
+                                                                 ID_LOCALIDADE, ID_OPORTUNIDADE, ID_SERVICO,
+                                                                 ID_TRANSACAO, ID_FAIXA_ETARIA_CLIENTE,
+                                                                 ID_FAIXA_ETARIA_ACOMPANHANTE,
+                                                                 ID_TIPO_ACOMPANHAMENTO, QTD, VALOR)
             VALUES (@ID_TEMPO, @ID_CLIENTE, @ID_ACOMPANHANTE, @ID_LOCALIDADE,
                     @ID_OPORTUNIDADE, @ID_SERVICO, @ID_TRANSACAO,
                     @ID_FAIXA_ETARIA_CLIENTE,
@@ -372,21 +372,21 @@ END
 
 GO
 
-CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_POVOA_FATO_OPORTUNIDADE_CONCLUIDA
+CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_POVOA_FATO_ACOMPANHAMENTO_CONCLUIDO
 AS
 BEGIN
-    DECLARE @ID_TEMPO INT,@ID_OPORTUNIDADE INT, @QTD SMALLINT;
-    DECLARE CURSOR_F CURSOR FOR SELECT F.ID_TEMPO, F.ID_OPORTUNIDADE, F.QTD
+    DECLARE @ID_TEMPO INT,@ID_OPORTUNIDADE INT, @QTD SMALLINT, @VALOR NUMERIC(10,2);
+    DECLARE CURSOR_F CURSOR FOR SELECT F.ID_TEMPO, F.ID_OPORTUNIDADE, F.QTD, F.VALOR
                                 FROM AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO F
                                          JOIN DIM_SERVICO DS on F.ID_SERVICO = DS.ID
                                 WHERE DS.status = 'CONCLUIDA';
     OPEN CURSOR_F;
-    FETCH CURSOR_F INTO @ID_TEMPO, @ID_OPORTUNIDADE, @QTD;
+    FETCH CURSOR_F INTO @ID_TEMPO, @ID_OPORTUNIDADE, @QTD, @VALOR;
     WHILE(@@FETCH_STATUS = 0)
     BEGIN
-        INSERT INTO FATO_OPORTUNIDADE_CONCLUIDA(ID_TEMPO, ID_OPORTUNIDADE, QTD)
-                                        VALUES(@ID_TEMPO, @ID_OPORTUNIDADE, @QTD);
-        FETCH CURSOR_F INTO @ID_TEMPO, @ID_OPORTUNIDADE, @QTD;
+        INSERT INTO FATO_ACOMPANHAMENTO_CONCLUIDO(ID_TEMPO, ID_OPORTUNIDADE, QTD, VALOR)
+        VALUES(@ID_TEMPO, @ID_OPORTUNIDADE, @QTD, @VALOR);
+        FETCH CURSOR_F INTO @ID_TEMPO, @ID_OPORTUNIDADE, @QTD, @VALOR;
     END
     CLOSE CURSOR_F;
     DEALLOCATE CURSOR_F;
