@@ -7,7 +7,7 @@
  * DIMENS�ES COM DADOS PR�-DEFINIDOS NECE�SS�RIOS PARA ESTA ETAPA */
 
 /*--------------------------- PROCEDIMENTOS DE CARGA DO AMBIENTE OPERACIONAL PARA AREA DE STAGING ---------------------------*/
-
+USE QUEROACOMPANHANTE_SAD;
 EXEC AMBIENTE_OLAP.SO_EXECUTA_PROCEDIMENTOS_DE_CARGA '20190721'
 
 /* ------------------------------------------------------------------------------------------------------------ */

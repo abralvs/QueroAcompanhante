@@ -1,3 +1,6 @@
+CREATE DATABASE QUEROACOMPANHANTE_SAD;
+USE QUEROACOMPANHANTE_SAD;
+
 CREATE SCHEMA AMBIENTE_OLTP;
 
 												--- -----------------------------------------
