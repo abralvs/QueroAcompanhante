@@ -9,7 +9,7 @@
  **/
 USE QueroAcompanhanteSAD;
 --- --------------------------------------------------------------------
--- 01 - Quantos serviÃ§os de acompanhamentos foram criados ? por perÃ­odo?
+-- 01 - Quantos serviÃ§os de acompanhamentos foram criados ? por perÃodo?
 --- --------------------------------------------------------------------
 
 CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_01_QTD_DE_ACOMPANHAMENTOS (@DATA_INICIO DATETIME,@DATA_LIMITE DATETIME)
@@ -122,7 +122,7 @@ END
 
 GO
 
-CREATE PROCEDURE SP_06_QTD_ESPECIE_TOTAL_VALOR(@INICIO_PERIODO DATETIME, @FIM_PERIODO DATETIME)
+CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_06_QTD_ESPECIE_TOTAL_VALOR(@INICIO_PERIODO DATETIME, @FIM_PERIODO DATETIME)
 AS
 BEGIN
 	SELECT COUNT(FA.QTD) AS QUANTIDADE_ESPECIE, SUM(FA.VALOR) AS TOTAL FROM AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO FA
