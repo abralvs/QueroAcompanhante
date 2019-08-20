@@ -8,7 +8,9 @@
  **/
  USE QUEROACOMPANHANTE_SAD;
  CREATE SCHEMA AMBIENTE_OLAP;
-/*--------------------------- CRIANDO TABELAS AUXILIARES DA AREA DE STAGING ---------------------------*/
+								--- ------------------------------------------- ---
+								-- CRIANDO TABELAS AUXILIARES DA AREA DE STAGING --
+								--- ------------------------------------------- ---
 
 CREATE TABLE AMBIENTE_OLAP.TB_AUX_CLIENTE(
 	data_carga DATETIME NOT NULL,

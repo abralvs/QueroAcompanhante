@@ -11,7 +11,7 @@ CREATE SCHEMA AMBIENTE_DIMENSIONAL;
 
 -- -----------------------------------------------------
 -- TABLE AMBIENTE_DIMENSIONAL.DIM_TEMPO
--- -------------------------------Table ----------------------
+-- -----------------------------------------------------
 CREATE TABLE AMBIENTE_DIMENSIONAL.DIM_TEMPO (
                                                 id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
                                                 nivel VARCHAR(3) NOT NULL,
