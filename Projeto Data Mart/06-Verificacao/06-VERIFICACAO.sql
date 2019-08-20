@@ -64,13 +64,6 @@ BEGIN
     ELSE
         SELECT 0 AS 'ACOMPANHAMENTOS CONCLUIDOS'
 
-	SELECT AVG(FA.ID_OPORTUNIDADE) FROM AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO FA
-	INNER JOIN AMBIENTE_DIMENSIONAL.DIM_OPORTUNIDADE DO
-	ON FA.ID_OPORTUNIDADE = DO.ID
-	INNER JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO DT
-	ON FA.ID_TEMPO = DT.ID
-	WHERE EH_PUBLICA = 1 AND (DT.DATA >= @INICIO_PERIODO AND DT.DATA <= @FIM_PERIODO);
-
 END
 
 GO
@@ -139,9 +132,11 @@ CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_06_QTD_ESPECIE_TOTAL_VALOR(@INICIO_PERI
 AS
 BEGIN
     SELECT COUNT(FA.QTD) AS QUANTIDADE_ESPECIE, SUM(FA.VALOR) AS TOTAL FROM AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO FA
-                                                                                INNER JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO DT
-                                                                                           ON FA.ID_TEMPO = DT.ID
-    WHERE (DT.DATA >= @INICIO_PERIODO AND DT.DATA <= @FIM_PERIODO);
+    INNER JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO DT ON FA.ID_TEMPO = DT.ID 
+	WHERE (DT.DATA >= @INICIO_PERIODO AND DT.DATA <= @FIM_PERIODO);
+END
+
+GO
 
 CREATE PROCEDURE SP_06_QTD_ESPECIE_TOTAL_VALOR(@INICIO_PERIODO DATETIME, @FIM_PERIODO DATETIME)
 AS
@@ -187,6 +182,9 @@ BEGIN
                                   INNER JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO DT
                                              ON FA.ID_TEMPO = DT.ID
     WHERE DT.DATA = @DATA;
+END
+
+GO
 
 --- ------------------------------------------------------
 -- 09 - Qual a faixa etária da maior parte dos clientes ?
@@ -199,7 +197,7 @@ BEGIN
     DECLARE @QTD_CLIENTES INT
 
     SELECT TOP 1 @QTD_CLIENTES = COUNT(FATO.QTD), @FAIXA_ETARIA_CLIENTE = FX.descricao FROM FATO_ACOMPANHAMENTO AS FATO
-                                                                                                JOIN AMBIENTE_DIMENSIONAL.DIM_FAIXA_ETARIA AS FX ON (FX.id = FATO.id_faixa_etaria_cliente) GROUP BY FX.descricao
+	JOIN AMBIENTE_DIMENSIONAL.DIM_FAIXA_ETARIA AS FX ON (FX.id = FATO.id_faixa_etaria_cliente) GROUP BY FX.descricao
 
     IF (@FAIXA_ETARIA_CLIENTE IS NOT NULL OR @QTD_CLIENTES IS NOT NULL )
         SELECT @FAIXA_ETARIA_CLIENTE AS 'FAIXA ETARIA', @QTD_CLIENTES AS 'QUANTIDADE DE CLIENTES'
@@ -239,6 +237,7 @@ BEGIN
                                                         JOIN AMBIENTE_DIMENSIONAL.DIM_TIPO_ACOMPANHAMENTO AS FT ON (FT.ID = FATO.ID_TIPO_ACOMPANHAMENTO) GROUP BY FT.DESCRICAO;
 END
 
+ GO
 --- ----------------------------------------------------------------------------------------------------------
 -- 11 - Qual o tipo de serviço de acompanhamento são ofertadas o maior número de oportunidades ? por período ?
 --- ----------------------------------------------------------------------------------------------------------
@@ -249,8 +248,8 @@ BEGIN
     DECLARE @QTD_OPORTUNIDADES INT, @TIPO_ACOMPANHAMENTO VARCHAR(100)
 
     SELECT TOP 1 @QTD_OPORTUNIDADES = COUNT(FATO.QTD),@TIPO_ACOMPANHAMENTO = TIPO.tipo_acompanhamento FROM FATO_ACOMPANHAMENTO AS FATO
-                                                                                                               JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO AS TEMPO ON (TEMPO.id = FATO.id_tempo) AND (TEMPO.Data >= @DATA_INICIO) AND (TEMPO.Data <= @DATA_LIMITE)
-                                                                                                               JOIN AMBIENTE_DIMENSIONAL.DIM_TIPO_ACOMPANHAMENTO AS TIPO ON (TIPO.id = FATO.id_tipo_acompanhamento) GROUP BY TIPO.tipo_acompanhamento
+    JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO AS TEMPO ON (TEMPO.id = FATO.id_tempo) AND (TEMPO.Data >= @DATA_INICIO) AND (TEMPO.Data <= @DATA_LIMITE)
+    JOIN AMBIENTE_DIMENSIONAL.DIM_TIPO_ACOMPANHAMENTO AS TIPO ON (TIPO.id = FATO.id_tipo_acompanhamento) GROUP BY TIPO.tipo_acompanhamento
 
 
     IF (@QTD_OPORTUNIDADES IS NOT NULL OR @TIPO_ACOMPANHAMENTO IS NOT NULL )
