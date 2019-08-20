@@ -1,14 +1,15 @@
 /** 
  * UNIVERSIDADE FEDERAL DE SERGIPE 
  * DEPARTAMENTO DE SISTEMAS DE INFORMA??O - DSI
- * SISTEMAS DE APOIO A DECIS�O -SAD
- * PROJETAR AMBIENTE DE SUPORTE A DECIS�O BASEADO EM SISTEMA DE ACOMPANHANTES
- * ABRA�O ALVES, IGOR BRUNO E GABRIEL SANTANA
+
+ * SISTEMAS DE APOIO A DECISÃO -SAD
+ * PROJETAR AMBIENTE DE SUPORTE A DECISÃO BASEADO EM SISTEMA DE ACOMPANHANTES
+ * ABRAÃO ALVES, IGOR BRUNO E GABRIEL SANTANA
  * 19/08/2019
  **/
 USE QueroAcompanhanteSAD;
 --- --------------------------------------------------------------------
--- 01 - Quantos serviços de acompanhamentos foram criados ? por período?
+-- 01 - Quantos serviÃ§os de acompanhamentos foram criados ? por perÃ­odo?
 --- --------------------------------------------------------------------
 
 CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_01_QTD_DE_ACOMPANHAMENTOS (@DATA_INICIO DATETIME,@DATA_LIMITE DATETIME)
@@ -47,7 +48,7 @@ END
 GO
 
 --- --------------------------------------------------------------------------------------
--- 03 - Quantos serviços de acompanhamentos foram concluídos no primeiro semestre de 2019?
+-- 03 - Quantos serviÃ§os de acompanhamentos foram concluÃ­dos no primeiro semestre de 2019?
 --- --------------------------------------------------------------------------------------
 
 CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_03_QTD_DE_ACOMPANHAMENTOS_CONCLUIDO (@DATA_INICIO DATETIME,@DATA_LIMITE DATETIME)
@@ -63,13 +64,6 @@ BEGIN
         SELECT @QTD_ACOMPANHAMENTOS AS 'ACOMPANHAMENTOS CONCLUIDOS'
     ELSE
         SELECT 0 AS 'ACOMPANHAMENTOS CONCLUIDOS'
-
-	SELECT AVG(FA.ID_OPORTUNIDADE) FROM AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO FA
-	INNER JOIN AMBIENTE_DIMENSIONAL.DIM_OPORTUNIDADE DO
-	ON FA.ID_OPORTUNIDADE = DO.ID
-	INNER JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO DT
-	ON FA.ID_TEMPO = DT.ID
-	WHERE EH_PUBLICA = 1 AND (DT.DATA >= @INICIO_PERIODO AND DT.DATA <= @FIM_PERIODO);
 
 END
 
@@ -93,7 +87,7 @@ END
 GO
 
 --- -------------------------------------------------------------------------
--- 05 - Quantas transações foram feitas em 2019 ? e qual o valor total delas?
+-- 05 - Quantas transaÃ§Ãµes foram feitas em 2019 ? e qual o valor total delas?
 --- -------------------------------------------------------------------------
 
 CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_05_QTD_E_VALOR_TRANSACOES (@DATA_INICIO DATETIME,@DATA_LIMITE DATETIME)
@@ -110,23 +104,6 @@ BEGIN
 		SELECT 0 AS 'QUANTIDADE DE TRANSACOES', 0 AS 'VALOR TOTAL'
 END
 
-GO 
-
-/* 
-	- QUESTIONAMENTO 04
-	- QUANTIDADE DE SERVICOS CANCELADOS NO PERIODO
-*/
-CREATE PROCEDURE SP_04_SERVICO_CANCELADO_PERIODO(@INICIO_PERIODO DATETIME, @FIM_PERIODO DATETIME)
-AS
-BEGIN
-	SELECT COUNT(FA.ID_SERVICO) FROM AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO FA
-	INNER JOIN AMBIENTE_DIMENSIONAL.DIM_SERVICO DS
-	ON FA.ID_SERVICO = DS.ID
-	INNER JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO DT
-	ON FA.ID_TEMPO = DT.ID
-	WHERE DS.STATUS = 'CANCELADA' AND (DT.DATA >= @INICIO_PERIODO AND DT.DATA <= @FIM_PERIODO);
-END
-
 GO
 
 /* 
@@ -139,9 +116,11 @@ CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_06_QTD_ESPECIE_TOTAL_VALOR(@INICIO_PERI
 AS
 BEGIN
     SELECT COUNT(FA.QTD) AS QUANTIDADE_ESPECIE, SUM(FA.VALOR) AS TOTAL FROM AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO FA
-                                                                                INNER JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO DT
-                                                                                           ON FA.ID_TEMPO = DT.ID
-    WHERE (DT.DATA >= @INICIO_PERIODO AND DT.DATA <= @FIM_PERIODO);
+    INNER JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO DT ON FA.ID_TEMPO = DT.ID 
+	WHERE (DT.DATA >= @INICIO_PERIODO AND DT.DATA <= @FIM_PERIODO);
+END
+
+GO
 
 CREATE PROCEDURE SP_06_QTD_ESPECIE_TOTAL_VALOR(@INICIO_PERIODO DATETIME, @FIM_PERIODO DATETIME)
 AS
@@ -156,7 +135,7 @@ END
 GO
 
 --- ------------------------------------------------------------------------------------------------------
--- 07 - Quantas transações foram feitas via cartão de crédito/débito? qual o valor total delas ? por período ?
+-- 07 - Quantas transaÃ§Ãµes foram feitas via cartÃ£o de crÃ©dito/dÃ©bito? qual o valor total delas ? por perÃ­odo ?
 --- -------------------------------------------------------------------------------------------------------
 CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_07_QTD_E_VALOR_TRANSACOES_POR_CARTAO (@DATA_INICIO DATETIME,@DATA_LIMITE DATETIME)
 AS
@@ -187,9 +166,12 @@ BEGIN
                                   INNER JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO DT
                                              ON FA.ID_TEMPO = DT.ID
     WHERE DT.DATA = @DATA;
+END
+
+GO
 
 --- ------------------------------------------------------
--- 09 - Qual a faixa etária da maior parte dos clientes ?
+-- 09 - Qual a faixa etÃ¡ria da maior parte dos clientes ?
 --- ------------------------------------------------------
 
 CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_09_FAIXA_ETARIA_CLIENTES
@@ -199,7 +181,7 @@ BEGIN
     DECLARE @QTD_CLIENTES INT
 
     SELECT TOP 1 @QTD_CLIENTES = COUNT(FATO.QTD), @FAIXA_ETARIA_CLIENTE = FX.descricao FROM FATO_ACOMPANHAMENTO AS FATO
-                                                                                                JOIN AMBIENTE_DIMENSIONAL.DIM_FAIXA_ETARIA AS FX ON (FX.id = FATO.id_faixa_etaria_cliente) GROUP BY FX.descricao
+	JOIN AMBIENTE_DIMENSIONAL.DIM_FAIXA_ETARIA AS FX ON (FX.id = FATO.id_faixa_etaria_cliente) GROUP BY FX.descricao
 
     IF (@FAIXA_ETARIA_CLIENTE IS NOT NULL OR @QTD_CLIENTES IS NOT NULL )
         SELECT @FAIXA_ETARIA_CLIENTE AS 'FAIXA ETARIA', @QTD_CLIENTES AS 'QUANTIDADE DE CLIENTES'
@@ -210,7 +192,7 @@ END
 GO
 
 --- ----------------------------------------------------------
--- 09 - Qual a faixa etária da maior parte dos acompanhantes ?
+-- 09 - Qual a faixa etÃ¡ria da maior parte dos acompanhantes ?
 --- ----------------------------------------------------------
 
 CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_09_FAIXA_ETARIA_ACOMPANHANTES
@@ -239,8 +221,9 @@ BEGIN
                                                         JOIN AMBIENTE_DIMENSIONAL.DIM_TIPO_ACOMPANHAMENTO AS FT ON (FT.ID = FATO.ID_TIPO_ACOMPANHAMENTO) GROUP BY FT.DESCRICAO;
 END
 
+ GO
 --- ----------------------------------------------------------------------------------------------------------
--- 11 - Qual o tipo de serviço de acompanhamento são ofertadas o maior número de oportunidades ? por período ?
+-- 11 - Qual o tipo de serviÃ§o de acompanhamento sÃ£o ofertadas o maior nÃºmero de oportunidades ? por perÃ­odo ?
 --- ----------------------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_11_TIPO_MAIS_COMUM_DE_ACOMPANHAMENTO (@DATA_INICIO DATETIME,@DATA_LIMITE DATETIME)
@@ -249,8 +232,8 @@ BEGIN
     DECLARE @QTD_OPORTUNIDADES INT, @TIPO_ACOMPANHAMENTO VARCHAR(100)
 
     SELECT TOP 1 @QTD_OPORTUNIDADES = COUNT(FATO.QTD),@TIPO_ACOMPANHAMENTO = TIPO.tipo_acompanhamento FROM FATO_ACOMPANHAMENTO AS FATO
-                                                                                                               JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO AS TEMPO ON (TEMPO.id = FATO.id_tempo) AND (TEMPO.Data >= @DATA_INICIO) AND (TEMPO.Data <= @DATA_LIMITE)
-                                                                                                               JOIN AMBIENTE_DIMENSIONAL.DIM_TIPO_ACOMPANHAMENTO AS TIPO ON (TIPO.id = FATO.id_tipo_acompanhamento) GROUP BY TIPO.tipo_acompanhamento
+    JOIN AMBIENTE_DIMENSIONAL.DIM_TEMPO AS TEMPO ON (TEMPO.id = FATO.id_tempo) AND (TEMPO.Data >= @DATA_INICIO) AND (TEMPO.Data <= @DATA_LIMITE)
+    JOIN AMBIENTE_DIMENSIONAL.DIM_TIPO_ACOMPANHAMENTO AS TIPO ON (TIPO.id = FATO.id_tipo_acompanhamento) GROUP BY TIPO.tipo_acompanhamento
 
 
     IF (@QTD_OPORTUNIDADES IS NOT NULL OR @TIPO_ACOMPANHAMENTO IS NOT NULL )
@@ -263,7 +246,7 @@ END
 GO
 
 --------------------------------------------------------------------------------------------------------------
--- 12 - Quais os tipos de serviço de acompanhamento ofertados possuem o maior número candidatos?
+-- 12 - Quais os tipos de serviÃ§o de acompanhamento ofertados possuem o maior nÃºmero candidatos?
 --------------------------------------------------------------------------------------------------------------
 CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_12_TIPOS_COM_MAIS_CANDIDATOS
 AS
@@ -276,7 +259,7 @@ END
 GO
 
 --- ------------------------------------------------------------------------------------------
--- 13 - Quais os estados em que são realizadas o maior número de Acompanhamentos? por período?
+-- 13 - Quais os estados em que sÃ£o realizadas o maior nÃºmero de Acompanhamentos? por perÃ­odo?
 --- ------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE AMBIENTE_DIMENSIONAL.SP_13_ESTADOS_MAIS_COMUNS (@DATA_INICIO DATETIME,@DATA_LIMITE DATETIME)
@@ -310,7 +293,7 @@ END
 GO
 
 EXEC AMBIENTE_DIMENSIONAL.SP_01_QTD_DE_ACOMPANHAMENTOS '20160721', '20190721'
-EXEC SP_02_MEDIA_CANDIDATOS_VAGAS_PUBLICAS '20160721', '20190721'
+EXEC AMBIENTE_DIMENSIONAL.SP_02_MEDIA_CANDIDATOS_VAGAS_PUBLICAS '20160721', '20190721'
 EXEC AMBIENTE_DIMENSIONAL.SP_03_QTD_DE_ACOMPANHAMENTOS_CONCLUIDO '20160721', '20190721'
 EXEC AMBIENTE_DIMENSIONAL.SP_04_SERVICO_CANCELADO_PERIODO '20160721', '20190721'
 EXEC AMBIENTE_DIMENSIONAL.SP_05_QTD_E_VALOR_TRANSACOES '20160721', '20190721'
@@ -323,5 +306,5 @@ EXEC AMBIENTE_DIMENSIONAL.SP_10_TIPOS_MAIS_COMUNS_ACOMPANHAMENTO
 EXEC AMBIENTE_DIMENSIONAL.SP_11_TIPO_MAIS_COMUM_DE_ACOMPANHAMENTO '20160721', '20190721'
 EXEC AMBIENTE_DIMENSIONAL.SP_12_TIPOS_COM_MAIS_CANDIDATOS
 EXEC AMBIENTE_DIMENSIONAL.SP_13_ESTADOS_MAIS_COMUNS '20160721', '20190721'
-EXEC AMBIENTE_DIMENSIONAL. SP_14_ACOMPANHAMENTOS_CIDADE '20160721', '20190721'
+EXEC AMBIENTE_DIMENSIONAL.SP_14_ACOMPANHAMENTOS_CIDADE '20160721', '20190721'
 
