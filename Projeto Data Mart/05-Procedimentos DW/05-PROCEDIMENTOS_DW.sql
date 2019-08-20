@@ -1,4 +1,4 @@
-
+USE QUEROACOMPANHANTE_SAD;
 -- -----------------------------------------------------
 -- EXECUTA PROCEDURES
 -- -----------------------------------------------------
@@ -8,6 +8,7 @@ EXEC AMBIENTE_DIMENSIONAL.SP_POVOA_FATO_ACOMPANHAMENTO_CONCLUIDO           ;
 
 SELECT * FROM AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO
 SELECT * FROM AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO_CONCLUIDO
+
 
 -- -----------------------------------------------------
 -- PROCEDURE AMBIENTE_DIMENSIONAL.DIM_OPORTUNIDADE

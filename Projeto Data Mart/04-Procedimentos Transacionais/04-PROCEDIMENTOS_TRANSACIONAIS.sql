@@ -1,18 +1,30 @@
+/**
+ * UNIVERSIDADE FEDERAL DE SERGIPE
+ * DEPARTAMENTO DE SISTEMAS DE INFORMAÇÃO - DSI
+ * SISTEMAS DE APOIO A DECISÃO -SAD
+ * PROJETAR AMBIENTE DE SUPORTE A DECISÃO BASEADO EM SISTEMA DE ACOMPANHANTES
+ * ABRAÃO ALVES, IGOR BRUNO E GABRIEL SANTANA
+ **/
+
+
 /** 
  * ------------------------- ATEN��O ------------------------- 
  * ANTES DE EXECUTAR ESTE SCRIPT, VOC� DEVER� EXECUTAR
- * O SCRIPT POVOANDO_DIMS_PRE_CARRGAVEIS.SQL NESTA MESMA PASTA,
+ * O SCRIPT (3.5) POVOANDO_DIMS_PRE_CARRGAVEIS.SQL NESTA MESMA PASTA,
  * QUE REALIZA O TRABALHO DE CARREGAMENTO DE ALGUMAS DIMENS�ES
  * COMO DIM_TEMPO, DIM_FAIXA_ETARIA, DIM_TRANSACAO, QUE S�O 
- * DIMENS�ES COM DADOS PR�-DEFINIDOS NECE�SS�RIOS PARA ESTA ETAPA */
+ * DIMENS�ES COM DADOS PR�-DEFINIDOS NECE�SS�RIOS PARA ESTA ETAPA 
+ **/
 
-/*--------------------------- PROCEDIMENTOS DE CARGA DO AMBIENTE OPERACIONAL PARA AREA DE STAGING ---------------------------*/
-
+						--- ----------------------------------------------------------------- ---
+						-- PROCEDIMENTOS DE CARGA DO AMBIENTE OPERACIONAL PARA AREA DE STAGING --
+						--- ----------------------------------------------------------------- ---
+USE QUEROACOMPANHANTE_SAD;
 EXEC AMBIENTE_OLAP.SO_EXECUTA_PROCEDIMENTOS_DE_CARGA '20190721'
 
-/* ------------------------------------------------------------------------------------------------------------ */
-
---- CARREGA DADOS DO AMBIENTE OPERACIONAL PARA AS TABELAS AUXILIARES DE CLIENTE E ACOMPANHANTE
+--- -----------------------------------------------------------------------------------------
+-- CARREGA DADOS DO AMBIENTE OPERACIONAL PARA AS TABELAS AUXILIARES DE CLIENTE E ACOMPANHANTE
+--- -----------------------------------------------------------------------------------------
 CREATE PROCEDURE AMBIENTE_OLAP.SP_OLTP_CARREGA_CLIENTES_E_ACOMPANHANTES (@DATACARGA DATETIME)
 AS
 	BEGIN
@@ -79,12 +91,12 @@ AS
 		(SELECT @DATACARGA,op.idOportunidade, op.titulo,op.descricao,op.status,op.EhPublica,op.idTipoAcompanhamento,
 			isnull((SELECT COUNT(cd.idCandidatura) AS CANDIDATURA  FROM AMBIENTE_OLTP.Candidatura as cd
 			Where cd.idOportunidade = op.idOportunidade GROUP BY cd.idOportunidade),0)
-		FROM AMBIENTE_OLTP.Oportunidade as op WHERE (data_atualizacao >= @DATACARGA))
-
+		FROM AMBIENTE_OLTP.Oportunidade as op WHERE (op.data_atualizacao >= @DATACARGA) AND (op.status = 'OCUPADA'))
+		
 		INSERT INTO AMBIENTE_OLAP.TB_AUX_SERVICO(data_carga,codigo,id_cliente,id_acompanhante,id_oportunidade,valor_total,status)
 		(SELECT @DATACARGA,se.idServico,se.idCliente,se.idAcompanhante,se.idOportunidade,
 			(SELECT dt.valor FROM AMBIENTE_OLTP.DetalhesEncontro AS dt WHERE dt.idServico = se.idServico),
-		status FROM AMBIENTE_OLTP.Servico as se WHERE (data_atualizacao >= @DATACARGA))
+		status FROM AMBIENTE_OLTP.Servico as se WHERE (se.data_atualizacao >= @DATACARGA) AND ((se.status = 'CANCELADA') OR (se.status = 'CONCLUIDA')))
 
 		INSERT INTO AMBIENTE_OLAP.TB_AUX_TIPO_ACOMPANHAMENTO (data_carga,codigo,tipo_acompanhamento,descricao)
 		(SELECT @DATACARGA,idTipoAcompanhamento,TipoAcompanhamento,descricao FROM AMBIENTE_OLTP.TipoAcompanhamento WHERE (data_atualizacao >= @DATACARGA))

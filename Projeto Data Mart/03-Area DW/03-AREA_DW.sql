@@ -3,15 +3,15 @@
  * DEPARTAMENTO DE SISTEMAS DE INFORMAÇÃO - DSI
  * SISTEMAS DE APOIO A DECISÃO -SAD
  * PROJETAR AMBIENTE DE SUPORTE A DECISÃO BASEADO EM SISTEMA DE ACOMPANHANTES
- * ABRAÃO ALVES E IGOR BRUNO
+ * ABRAÃO ALVES, IGOR BRUNO E GABRIEL SANTANA
  **/
 
-
+USE QUEROACOMPANHANTE_SAD;
 CREATE SCHEMA AMBIENTE_DIMENSIONAL;
 
 -- -----------------------------------------------------
 -- TABLE AMBIENTE_DIMENSIONAL.DIM_TEMPO
--- -------------------------------Table ----------------------
+-- -----------------------------------------------------
 CREATE TABLE AMBIENTE_DIMENSIONAL.DIM_TEMPO (
                                                 id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
                                                 nivel VARCHAR(3) NOT NULL,
