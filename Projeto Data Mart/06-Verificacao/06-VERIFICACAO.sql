@@ -1,12 +1,12 @@
 /** 
  * UNIVERSIDADE FEDERAL DE SERGIPE 
  * DEPARTAMENTO DE SISTEMAS DE INFORMA??O - DSI
- * SISTEMAS DE APOIO A DECISÃO -SAD
- * PROJETAR AMBIENTE DE SUPORTE A DECISÃO BASEADO EM SISTEMA DE ACOMPANHANTES
- * ABRAÃO ALVES, IGOR BRUNO E GABRIEL SANTANA
+ * SISTEMAS DE APOIO A DECISï¿½O -SAD
+ * PROJETAR AMBIENTE DE SUPORTE A DECISï¿½O BASEADO EM SISTEMA DE ACOMPANHANTES
+ * ABRAï¿½O ALVES, IGOR BRUNO E GABRIEL SANTANA
  * 19/08/2019
  **/
-USE QUEROACOMPANHANTE_SAD;
+USE QueroAcompanhanteSAD;
 --- --------------------------------------------------------------------
 -- 01 - Quantos serviÃ§os de acompanhamentos foram criados ? por perÃ­odo?
 --- --------------------------------------------------------------------
