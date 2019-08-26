@@ -159,10 +159,9 @@ CREATE TABLE AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO (
 -- -----------------------------------------------------
 -- AGREGADO ACOMPANHAMENTO CONCLUIDOS
 -- -----------------------------------------------------
-CREATE TABLE AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO_CONCLUIDO(
+CREATE TABLE AMBIENTE_DIMENSIONAL.FATO_ACOMPANHAMENTO_CONCLUIDO_MES(
                                                                    id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
                                                                    id_tempo INT NOT NULL,
-                                                                   id_oportunidade INT NOT NULL,
                                                                    qtd INT NOT NULL,
                                                                    valor NUMERIC(10,2) NOT NULL
 )
