@@ -19,7 +19,7 @@
 						--- ----------------------------------------------------------------- ---
 						-- PROCEDIMENTOS DE CARGA DO AMBIENTE OPERACIONAL PARA AREA DE STAGING --
 						--- ----------------------------------------------------------------- ---
-USE QueroAcompanhanteSAD;
+USE QUEROACOMPANHANTE_SAD;
 EXEC AMBIENTE_OLAP.SO_EXECUTA_PROCEDIMENTOS_DE_CARGA '20190721'
 
 --- -----------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-USE QueroAcompanhanteSAD;
+USE QUEROACOMPANHANTE_SAD;
 
 -- -----------------------------------------------------
 -- EXECUTA PROCEDURES
