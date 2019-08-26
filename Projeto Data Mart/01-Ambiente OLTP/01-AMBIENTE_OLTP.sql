@@ -6,7 +6,7 @@
  * ABRAÃO ALVES, IGOR BRUNO E GABRIEL SANTANA
  **/
 
-CREATE DATABASE QueroAcompanhanteSAD;
+CREATE DATABASE QUEROACOMPANHANTE_SAD;
 USE QUEROACOMPANHANTE_SAD;
 
 CREATE SCHEMA AMBIENTE_OLTP;
@@ -162,7 +162,9 @@ AS
 			  ('JOSIELY DE OLIVEIRA','79998716573','FEMININO','07195693290',CAST('19990106' AS DATETIME),'josy@gmail.com','josi99','josygat','SOU ESTUDANTE DE FISICA E PRESTO ACOMPANHANMENTO ESCOLAR PARA ALUNOS AT� 9� ANO E ACOMPANHAMENTO INFANTIL',GETDATE()),
 			  ('MARIA APARECIDA','79989527369','FEMININO','06932416590',CAST('19781231' AS DATETIME),'cia@gmail.com','cidaribs','5544asd','OL�, ME CHAMO APARECIDA E FA�O ACOMPANHAMENTO INFANTIL e DOM�STICO, ME CONTRATE, POSSO CUIDAR DOS SEUS FILHOS',GETDATE()),
 			  ('MARCIA SANTANA','79551166661','FEMININO','07863245980',CAST('19850801' AS DATETIME),'marciasantana@outlook.com','marciasantana','marcinha123','SOU ACADEMICA DE ENFERMAGEM E FA�O ACOMPANHAMENO M�DICO POR UM PRE�O JUSTO!',GETDATE()),
-			  ('GILMAR RIBEIRO','75998287294','MASCULINO','04763214789',CAST('19810506' AS DATETIME),'gilmar@hotmail.com','gilmarsans','511654S65D','EM BUSCA DE ACOMPANHANTES DOM�STICAS E PARA CUIDAR DOS MEUS FILHOS',GETDATE())
+			  ('GILMAR RIBEIRO','75998287294','MASCULINO','04763214789',CAST('19810506' AS DATETIME),'gilmar@hotmail.com','gilmarsans','511654S65D','EM BUSCA DE ACOMPANHANTES DOM�STICAS E PARA CUIDAR DOS MEUS FILHOS',GETDATE()),
+			  ('JOSE DA SILVA','79551166661','MASCULINO','02536598740',CAST('19890801' AS DATETIME),'jose@outlook.com','josesil','marcinha123','',GETDATE()),
+			  ('JOSEFA SANTANA','75998287294','FEMININO','02536598709',CAST('19910506' AS DATETIME),'josefabb@hotmail.com','jos123','511654S65D','',GETDATE())
 
 		INSERT INTO AMBIENTE_OLTP.Endereco (estado,cidade,rua,bairro,numero,idUsuario,data_atualizacao)
 		VALUES ('BA','PARIPIRANGA','ZONA RURAL','POV. RASO',00,1,GETDATE()),
@@ -170,13 +172,16 @@ AS
 			   ('SE','ITABAIANA','RUA CAPITAO JOS� FERREIRA','CENTRO',232,3,GETDATE()),
 			   ('SE','ITABAIANA','AV. BOANERGES PINHEIRO','CENTRO',144,4,GETDATE()),
 			   ('SE','LAGARTO','RUA GET�LIO VARGAS','CENTRO',186,5,GETDATE()),
-			   ('SE','ARACAJU','RUA LARANJEIRAS','BAIRO JARDINS',98,6,GETDATE())
+			   ('SE','ARACAJU','RUA LARANJEIRAS','BAIRO JARDINS',98,6,GETDATE()),
+			    ('SE','LAGARTO','RUA GET�LIO VARGAS','CENTRO',186,7,GETDATE()),
+			   ('SE','ARACAJU','RUA LARANJEIRAS','BAIRO JARDINS',98,8,GETDATE())
 
 
 		INSERT INTO AMBIENTE_OLTP.Acompanhante (idAcompanhante,valorHora,credencialContaDigital,data_atualizacao)
 		VALUES(3,20.00,'HD541DA-1',GETDATE()), 
 			  (4,50.00,'00145HJ-X',GETDATE()),
-			  (5,120.00,'00012A-0',GETDATE())
+			  (5,120.00,'00012A-0',GETDATE()),
+			  (7,100.00,'EFR4FD-X',GETDATE())
 	END
 
 GO
@@ -200,21 +205,61 @@ AS
 		INSERT INTO AMBIENTE_OLTP.Oportunidade (data_solicitacao,titulo,descricao,idTipoAcompanhamento,idCliente,idAcompanhante,idAcompanhnatePreferido,status,EhPublica,data_atualizacao)
 		VALUES(GETDATE(), 'VAGA PARA ACOMPANHANTE MEDICO','PROCURO UMA PESSOA PARA FAZER UM ACOMPANHAMENTO M�DICO COMIGO NO PR�XIMO FINAL DE SEMANA 21-22/07, HORARIOS A COMBINAR',1,6,NULL,5,'ABERTA',0,GETDATE()),
 			  (GETDATE(), 'VAGA PARA BABA','PROCURO UMA PESSOA PARA FAZER ACOMPANHAMENTO INFANTIL PARA OS MEUS FILHOS NO PROXIMO FINAL DE SEMANA 21-22/07, HORARIOS A COMBINAR',2,6,NULL,NULL,'ABERTA',1,GETDATE()),
-			  (GETDATE(), 'VAGA PARA PROFESSORA DE BANCA','PROCURO UMA PESSOA PARA FAZER UM ACOMPANHAMENTO ESCOLAR COMIGO',5,1,NULL,NULL,'ABERTA',1,GETDATE())
-		
+			  (GETDATE(), 'VAGA PARA PROFESSORA DE BANCA','PROCURO UMA PESSOA PARA FAZER UM ACOMPANHAMENTO ESCOLAR COMIGO',5,1,NULL,NULL,'ABERTA',1,GETDATE()),
+			  (GETDATE(), 'VAGA PARA ACOMPANHANTE MEDICO','PROCURO UMA PESSOA PARA FAZER UM ACOMPANHAMENTO M�DICO COMIGO NO PR�XIMO FINAL DE SEMANA 21-22/07, HORARIOS A COMBINAR',1,8,NULL,5,'ABERTA',0,GETDATE()),
+			  (GETDATE(), 'VAGA PARA BABA','PROCURO UMA PESSOA PARA FAZER ACOMPANHAMENTO INFANTIL PARA OS MEUS FILHOS NO PROXIMO FINAL DE SEMANA 21-22/07, HORARIOS A COMBINAR',2,2,NULL,7,'ABERTA',0,GETDATE()),
+			  (GETDATE(), 'VAGA PARA PROFESSORA DE BANCA','PROCURO UMA PESSOA PARA FAZER UM ACOMPANHAMENTO ESCOLAR COMIGO',5,1,NULL,NULL,'ABERTA',1,GETDATE()),	
+			  ('20190522', 'VAGA PARA ACOMPANHANTE MEDICO','PROCURO UMA PESSOA PARA FAZER UM ACOMPANHAMENTO M�DICO COMIGO NO PR�XIMO FINAL DE SEMANA 21-22/07, HORARIOS A COMBINAR',1,6,NULL,5,'ABERTA',0,GETDATE()),
+			  ('20190615', 'VAGA PARA BABA','PROCURO UMA PESSOA PARA FAZER ACOMPANHAMENTO INFANTIL PARA OS MEUS FILHOS NO PROXIMO FINAL DE SEMANA 21-22/07, HORARIOS A COMBINAR',2,6,NULL,NULL,'ABERTA',1,GETDATE()),
+			  ('20190520', 'VAGA PARA PROFESSORA DE BANCA','PROCURO UMA PESSOA PARA FAZER UM ACOMPANHAMENTO ESCOLAR COMIGO',5,1,NULL,NULL,'ABERTA',1,GETDATE()),
+			  ('20190522', 'VAGA PARA ACOMPANHANTE MEDICO','PROCURO UMA PESSOA PARA FAZER UM ACOMPANHAMENTO M�DICO COMIGO NO PR�XIMO FINAL DE SEMANA 21-22/07, HORARIOS A COMBINAR',1,8,NULL,5,'ABERTA',0,GETDATE()),
+			  ('20190722', 'VAGA PARA BABA','PROCURO UMA PESSOA PARA FAZER ACOMPANHAMENTO INFANTIL PARA OS MEUS FILHOS NO PROXIMO FINAL DE SEMANA 21-22/07, HORARIOS A COMBINAR',2,2,NULL,7,'ABERTA',0,GETDATE()),
+			  ('20190822', 'VAGA PARA PROFESSORA DE BANCA','PROCURO UMA PESSOA PARA FAZER UM ACOMPANHAMENTO ESCOLAR COMIGO',5,1,NULL,NULL,'ABERTA',1,GETDATE())
+			
+			
+
 		INSERT INTO AMBIENTE_OLTP.Candidatura (idAcompanhante,idOportunidade,data_atualizacao)
 		VALUES(4,2,GETDATE()),
 			  (3,2,GETDATE()),
-			  (3,3,GETDATE())
+			  (3,3,GETDATE()),
+			  (7,6,GETDATE()),
+			  (4,6,GETDATE()),
+			  (5,6,GETDATE()),
+			  (4,2,GETDATE()),
+			  (3,2,GETDATE()),
+			  (3,3,GETDATE()),
+			  (7,6,GETDATE()),
+			  (4,6,GETDATE()),
+			  (5,6,GETDATE())
 		
 		UPDATE AMBIENTE_OLTP.Oportunidade SET idAcompanhante = 5, status = 'OCUPADA',data_atualizacao = GETDATE() where idOportunidade = 1
 		UPDATE AMBIENTE_OLTP.Oportunidade SET idAcompanhante = 4, status = 'OCUPADA',data_atualizacao = GETDATE() where idOportunidade = 2
 		UPDATE AMBIENTE_OLTP.Oportunidade SET idAcompanhante = 3, status = 'OCUPADA',data_atualizacao = GETDATE() where idOportunidade = 3
+		UPDATE AMBIENTE_OLTP.Oportunidade SET idAcompanhante = 5, status = 'OCUPADA',data_atualizacao = GETDATE() where idOportunidade = 4
+		UPDATE AMBIENTE_OLTP.Oportunidade SET idAcompanhante = 7, status = 'OCUPADA',data_atualizacao = GETDATE() where idOportunidade = 5
+		UPDATE AMBIENTE_OLTP.Oportunidade SET idAcompanhante = 4, status = 'OCUPADA',data_atualizacao = GETDATE() where idOportunidade = 6
+		UPDATE AMBIENTE_OLTP.Oportunidade SET idAcompanhante = 5, status = 'OCUPADA',data_atualizacao = GETDATE() where idOportunidade = 7
+		UPDATE AMBIENTE_OLTP.Oportunidade SET idAcompanhante = 4, status = 'OCUPADA',data_atualizacao = GETDATE() where idOportunidade = 8
+		UPDATE AMBIENTE_OLTP.Oportunidade SET idAcompanhante = 3, status = 'OCUPADA',data_atualizacao = GETDATE() where idOportunidade = 9
+		UPDATE AMBIENTE_OLTP.Oportunidade SET idAcompanhante = 5, status = 'OCUPADA',data_atualizacao = GETDATE() where idOportunidade = 10
+		UPDATE AMBIENTE_OLTP.Oportunidade SET idAcompanhante = 7, status = 'OCUPADA',data_atualizacao = GETDATE() where idOportunidade = 11
+		UPDATE AMBIENTE_OLTP.Oportunidade SET idAcompanhante = 4, status = 'OCUPADA',data_atualizacao = GETDATE() where idOportunidade = 12
+
+
 
 		INSERT INTO AMBIENTE_OLTP.Servico (idOportunidade,idCliente,idAcompanhante,status,data_atualizacao)
 		VALUES(1,6,5,'EM ANDAMENTO',GETDATE()),
 			  (2,6,4,'EM ANDAMENTO',GETDATE()),
-			  (3,1,3,'EM ANDAMENTO',GETDATE())
+			  (3,1,3,'EM ANDAMENTO',GETDATE()),
+			  (4,8,5,'EM ANDAMENTO',GETDATE()),
+			  (5,2,7,'EM ANDAMENTO',GETDATE()),
+			  (6,1,4,'EM ANDAMENTO',GETDATE()),
+			  (1,6,5,'EM ANDAMENTO',GETDATE()),
+			  (2,6,4,'EM ANDAMENTO',GETDATE()),
+			  (3,1,3,'EM ANDAMENTO',GETDATE()),
+			  (4,8,5,'EM ANDAMENTO',GETDATE()),
+			  (5,2,7,'EM ANDAMENTO',GETDATE()),
+			  (6,1,4,'EM ANDAMENTO',GETDATE())
 	END
 
 GO
@@ -233,12 +278,6 @@ AS
 			   ('n�o, s� das 8 at� as 12 ',GETDATE(),6,5,1,GETDATE()),
 			   ('pronto, pode confirmar o encontro',GETDATE(),5,6,1,GETDATE()),
 			   ('Certo.',GETDATE(),6,5,1,GETDATE())
-
-		-- Detalhes Primeiro Encontro
-		INSERT INTO AMBIENTE_OLTP.DetalhesEncontro (idServico,dataServico,horaInicio,horaFim,estado,cidade,bairro,rua,nLocal,referencia,valor,data_atualizacao)
-		VALUES(1,'20190725','08:00:00','12:00:00','SE','ITABAIANA','CENTRO','AV. BOANERGES PINHEIRO',144,'',580.00,GETDATE())
-
-
 		/*-----------------------------------------------------------------------------------------------------------------------------------*/	
 		
 		INSERT INTO AMBIENTE_OLTP.Mensagem (mensagem,dataEHora,idRemetente,idDestinatario,idServico,data_atualizacao)
@@ -250,13 +289,7 @@ AS
 			  ('pronto, pode agendar o acompanhamento ',GETDATE(),4,6,2,GETDATE()),
 			  ('certo, agendado!.',GETDATE(),6,4,2,GETDATE())
 		
-		-- DETALHES SEGUNDO ENCONTRO
-		INSERT INTO AMBIENTE_OLTP.DetalhesEncontro (idServico,dataServico,horaInicio,horaFim,estado,cidade,bairro,rua,nLocal,referencia,valor,data_atualizacao)
-		VALUES(2,'20190725','09:00:00','15:00:00','SE','ITABAIANA','CENTRO','RUA CAPITAO JOS� FERREIRA',232,'',300.00,GETDATE())
-		
-		
 		/*-----------------------------------------------------------------------------------------------------------------------------------*/
-
 
 		INSERT INTO AMBIENTE_OLTP.Mensagem (mensagem,dataEHora,idRemetente,idDestinatario,idServico,data_atualizacao)
 		VALUES ('ol�, voce poderia me ajudar com refor�o esoclar en fisica ?',GETDATE(),1,4,3,GETDATE()),
@@ -266,11 +299,23 @@ AS
 			   ('marcado ent�o, vou agendar aqui',GETDATE(),1,4,3,GETDATE()),
 			   ('certo, at� l�',GETDATE(),4,1,3,GETDATE())
 		
+		/*-----------------------------------------------------------------------------------------------------------------------------------*/
 
+		-- Detalhes Primeiro Encontro
 		INSERT INTO AMBIENTE_OLTP.DetalhesEncontro (idServico,dataServico,horaInicio,horaFim,estado,cidade,bairro,rua,nLocal,referencia,valor,data_atualizacao)
-		VALUES(3,'20190822','14:00:00','18:00:00','SE','ITABAIANA','CENTRO','PERCILIO ANDRADE',507,'',80.00,GETDATE())
+		VALUES(1,'20190725','08:00:00','12:00:00','SE','ITABAIANA','CENTRO','AV. BOANERGES PINHEIRO',144,'',580.00,GETDATE()),
+		(2,'20190725','09:00:00','15:00:00','SE','ITABAIANA','CENTRO','RUA CAPITAO JOS� FERREIRA',232,'',300.00,GETDATE()),
+		(3,'20190822','14:00:00','18:00:00','SE','ITABAIANA','CENTRO','PERCILIO ANDRADE',507,'',80.00,GETDATE()),
+		(4,'20190912','08:00:00','12:00:00','SE','ITABAIANA','CENTRO','AV. BOANERGES PINHEIRO',144,'',580.00,GETDATE()),	
+		(5,'20190818','09:00:00','15:00:00','SE','ITABAIANA','CENTRO','RUA CAPITAO JOS� FERREIRA',232,'',300.00,GETDATE()),
+		(6,'20190725','14:00:00','18:00:00','SE','ITABAIANA','CENTRO','PERCILIO ANDRADE',507,'',80.00,GETDATE()),
+		(7,'20190725','08:00:00','12:00:00','SE','ITABAIANA','CENTRO','AV. BOANERGES PINHEIRO',144,'',580.00,GETDATE()),
+		(8,'20190903','09:00:00','15:00:00','SE','ITABAIANA','CENTRO','RUA CAPITAO JOS� FERREIRA',232,'',300.00,GETDATE()),
+		(9,'20190812','14:00:00','18:00:00','SE','ITABAIANA','CENTRO','PERCILIO ANDRADE',507,'',80.00,GETDATE()),
+		(10,'20190708','08:00:00','12:00:00','SE','ITABAIANA','CENTRO','AV. BOANERGES PINHEIRO',144,'',580.00,GETDATE()),	
+		(11,'20190604','09:00:00','15:00:00','SE','ITABAIANA','CENTRO','RUA CAPITAO JOS� FERREIRA',232,'',300.00,GETDATE()),
+		(12,'20190529','14:00:00','18:00:00','SE','ITABAIANA','CENTRO','PERCILIO ANDRADE',507,'',80.00,GETDATE())
 		
-
 		/*-----------------------------------------------------------------------------------------------------------------------------------*/
 
 		/*Servi�o cancelado*/
@@ -281,17 +326,33 @@ AS
 			  ('tudo bem ent�o',GETDATE(),6,4,2,GETDATE())
 			  
 		UPDATE AMBIENTE_OLTP.Servico SET status = 'CANCELADA', data_atualizacao = GETDATE() WHERE idServico = 2;
-
+		UPDATE AMBIENTE_OLTP.Servico SET status = 'CANCELADA', data_atualizacao = GETDATE() WHERE idServico = 7;
 		
 		/*-----------------------------------------------------------------------------------------------------------------------------------*/
 		INSERT INTO AMBIENTE_OLTP.Transacao (idServico,dataTransacao,tipoPagamento,data_atualizacao)
 		VALUES(1,'20190725','CARTAO CREDITO/DEBITO',GETDATE()),
-			  (3,'20190822','EM ESPECIE',GETDATE())
+			  (3,'20190822','EM ESPECIE',GETDATE()),
+			  (4,'20190725','CARTAO CREDITO/DEBITO',GETDATE()),
+			  (5,'20190822','EM ESPECIE',GETDATE()),
+			  (6,'20190822','EM ESPECIE',GETDATE()),
+			  (8,'20190725','CARTAO CREDITO/DEBITO',GETDATE()),
+			  (9,'20190822','EM ESPECIE',GETDATE()),
+			  (10,'20190725','CARTAO CREDITO/DEBITO',GETDATE()),
+			  (11,'20190822','EM ESPECIE',GETDATE()),
+			  (12,'20190822','EM ESPECIE',GETDATE())
 
 
 		/*finalizando encontros*/
 		UPDATE AMBIENTE_OLTP.Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 1;
 		UPDATE AMBIENTE_OLTP.Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 3;
+		UPDATE AMBIENTE_OLTP.Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 4;
+		UPDATE AMBIENTE_OLTP.Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 5;
+		UPDATE AMBIENTE_OLTP.Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 6;
+		UPDATE AMBIENTE_OLTP.Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 8;
+		UPDATE AMBIENTE_OLTP.Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 9;
+		UPDATE AMBIENTE_OLTP.Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 10;
+		UPDATE AMBIENTE_OLTP.Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 11;
+		UPDATE AMBIENTE_OLTP.Servico SET status = 'CONCLUIDA', data_atualizacao = GETDATE() WHERE idServico = 12;
 	
 	END
 
