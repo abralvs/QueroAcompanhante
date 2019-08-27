@@ -149,7 +149,6 @@ CREATE TABLE AMBIENTE_OLTP.Transacao(
 --- -------------------------------------
 EXEC AMBIENTE_OLTP.SP_POVOA_AMBIENTE_OLTP
 
-
 --- -------------------------------------
 -- INSERINDO CLIENTES E ACOMPANHANTES  
 --- -------------------------------------
